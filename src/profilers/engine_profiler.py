@@ -7,14 +7,12 @@ from models.models import (
     EngineType,
     FileFormat,
     OperationType,
-    ProfilingRequest,
+    PipelineRequest,
     ProfilingResult,
 )
 
-# Each rule returns a (EngineType, weight, reason) vote or None if it doesn't apply.
-# Positive weight favors the given engine; the profiler sums votes per engine.
 Vote = tuple[EngineType, float, str]
-Rule = Callable[[ProfilingRequest], Vote | None]
+Rule = Callable[[PipelineRequest], Vote | None]
 
 _GB = 1024 ** 3
 _LARGE_DATASET_BYTES = 10 * _GB
@@ -22,14 +20,14 @@ _MEDIUM_DATASET_BYTES = 1 * _GB
 _LARGE_ROW_COUNT = 100_000_000
 
 
-def _required_engine_rule(req: ProfilingRequest) -> Vote | None:
+def _required_engine_rule(req: PipelineRequest) -> Vote | None:
     if req.required_engine is not None:
         return req.required_engine, 1.0, "explicitly required by caller"
     return None
 
 
-def _size_bytes_rule(req: ProfilingRequest) -> Vote | None:
-    size = req.dataset.size_bytes
+def _size_bytes_rule(req: PipelineRequest) -> Vote | None:
+    size = req.source.size_bytes
     if size is None:
         return None
     if size >= _LARGE_DATASET_BYTES:
@@ -39,8 +37,8 @@ def _size_bytes_rule(req: ProfilingRequest) -> Vote | None:
     return None
 
 
-def _row_count_rule(req: ProfilingRequest) -> Vote | None:
-    rows = req.dataset.row_count
+def _row_count_rule(req: PipelineRequest) -> Vote | None:
+    rows = req.source.row_count
     if rows is None:
         return None
     if rows >= _LARGE_ROW_COUNT:
@@ -48,8 +46,8 @@ def _row_count_rule(req: ProfilingRequest) -> Vote | None:
     return EngineType.DUCKDB, 0.4, f"{rows:,} rows is well within single-node capacity"
 
 
-def _format_rule(req: ProfilingRequest) -> Vote | None:
-    fmt = req.dataset.format
+def _format_rule(req: PipelineRequest) -> Vote | None:
+    fmt = req.source.format
     if fmt in (FileFormat.ORC, FileFormat.DELTA):
         return EngineType.SPARK, 0.4, f"{fmt.value} format is native to the Spark/Hadoop ecosystem"
     if fmt in (FileFormat.CSV, FileFormat.PARQUET, FileFormat.JSON):
@@ -57,10 +55,10 @@ def _format_rule(req: ProfilingRequest) -> Vote | None:
     return None
 
 
-def _operation_rule(req: ProfilingRequest) -> Vote | None:
+def _operation_rule(req: PipelineRequest) -> Vote | None:
     ops = set(req.operations)
     heavy_ops = {OperationType.JOIN, OperationType.WINDOW}
-    if heavy_ops & ops and req.dataset.size_bytes and req.dataset.size_bytes >= _MEDIUM_DATASET_BYTES:
+    if heavy_ops & ops and req.source.size_bytes and req.source.size_bytes >= _MEDIUM_DATASET_BYTES:
         return EngineType.SPARK, 0.4, f"heavy operations {[o.value for o in heavy_ops & ops]} on a large dataset favour Spark"
     return None
 
@@ -93,17 +91,19 @@ class RuleBasedEngineProfiler(Profiler):
     def name(self) -> str:
         return "rule_based_engine_profiler"
 
-    def can_handle(self, request: ProfilingRequest) -> bool:
-        return True  # applicable to any request
+    def can_handle(self, request: PipelineRequest) -> bool:
+        return True
 
-    def profile(self, request: ProfilingRequest) -> ProfilingResult:
-        tallies: dict[EngineType, _Tally] = {e: _Tally() for e in EngineType}
+    def profile(self, request: PipelineRequest) -> ProfilingResult:
+        available = set(request.available_engines)
+        tallies: dict[EngineType, _Tally] = {e: _Tally() for e in available}
 
         for rule in _RULES:
             vote = rule(request)
             if vote is not None:
                 engine, weight, reason = vote
-                tallies[engine].add(weight, reason)
+                if engine in available:
+                    tallies[engine].add(weight, reason)
 
         total = sum(t.total_weight for t in tallies.values()) or 1.0
 

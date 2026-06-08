@@ -7,14 +7,12 @@ dependencies = [
     "pandas>=2.0",
     "matplotlib>=3.9",
     "scikit-learn>=1.4",
-    "duckdb>=1.0",
     "narwhals>=1.0",
 ]
 
 [project.optional-dependencies]
-spark = [
-    "pyspark>=3.5",
-]
+duckdb = ["duckdb>=1.0"]
+spark = ["pyspark>=3.5"]
 dev = [
     "pytest>=8.0",
     "ruff>=0.4",

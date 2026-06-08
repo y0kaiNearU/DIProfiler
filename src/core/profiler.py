@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from models.models import ProfilingRequest, ProfilingResult
+from models.models import PipelineRequest, ProfilingResult
 
 
 class Profiler(ABC):
@@ -12,9 +12,9 @@ class Profiler(ABC):
         """Unique identifier for this profiler."""
 
     @abstractmethod
-    def can_handle(self, request: ProfilingRequest) -> bool:
+    def can_handle(self, request: PipelineRequest) -> bool:
         """Return True if this profiler is applicable to the given request."""
 
     @abstractmethod
-    def profile(self, request: ProfilingRequest) -> ProfilingResult:
+    def profile(self, request: PipelineRequest) -> ProfilingResult:
         """Analyze the request and return a ProfilingResult with recommendations."""
