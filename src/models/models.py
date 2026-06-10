@@ -37,7 +37,6 @@ class DatasetInfo:
 @dataclass
 class PipelineRequest:
     source: DatasetInfo
-    operations: list[OperationType] = field(default_factory=list)
     required_engine: Optional[EngineType] = None
     available_engines: list["EngineType"] = field(default_factory=lambda: list(EngineType))
     destination: Optional[DatasetInfo] = None
