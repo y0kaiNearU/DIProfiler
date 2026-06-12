@@ -39,6 +39,8 @@ class DatabaseSource:
     connection_string: str
     table_name: str
     database_type: str  # "postgresql", "mysql", "snowflake", etc.
+    schema: str = "public"
+    query: Optional[str] = None  # DuckDB SQL run against the attached DB as '_db'; overrides table_name
 
 
 DatasetSource = Union[FileSource, DatabaseSource]

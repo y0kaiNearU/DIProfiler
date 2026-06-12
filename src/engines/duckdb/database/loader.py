@@ -4,25 +4,24 @@ from typing import Any
 
 import narwhals as nw
 
+from engines.duckdb.database.common import attach, qualified_table, setup_extension
 from models.models import DatabaseSource
 
 SUPPORTED_DATABASES = ("postgresql", "mysql")
 
 
 def load(conn: Any, src: DatabaseSource) -> nw.LazyFrame:
-    match src.database_type:
-        case "postgresql":
-            conn.install_extension("postgres_scanner")
-            conn.load_extension("postgres_scanner")
-            native = conn.execute(
-                f"SELECT * FROM postgres_scan('{src.connection_string}', '{src.table_name}')"
-            ).fetch_arrow_table()
-        case "mysql":
-            conn.install_extension("mysql")
-            conn.load_extension("mysql")
-            native = conn.execute(
-                f"SELECT * FROM mysql_scan('{src.connection_string}', '{src.table_name}')"
-            ).fetch_arrow_table()
-        case _:
-            raise NotImplementedError(f"DuckDB database loader does not support {src.database_type}")
+    setup_extension(conn, src.database_type)
+    attach(conn, src)
+
+    sql = src.query if src.query else f"SELECT * FROM {qualified_table(src)}"
+
+    try:
+        native = conn.execute(sql).fetch_arrow_table()
+    except Exception as e:
+        location = f"'{src.schema}.{src.table_name}'" if not src.query else "custom query"
+        raise RuntimeError(
+            f"DuckDB failed to read from {src.database_type} {location}: {e}"
+        ) from e
+
     return nw.from_native(native)

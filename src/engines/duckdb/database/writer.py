@@ -4,22 +4,22 @@ from typing import Any
 
 import narwhals as nw
 
+from engines.duckdb.database.common import attach, qualified_table, setup_extension
 from models.models import DatabaseSource
 
 SUPPORTED_DATABASES = ("postgresql", "mysql")
 
 
 def write(conn: Any, frame: nw.LazyFrame, dest: DatabaseSource) -> None:
+    setup_extension(conn, dest.database_type)
+    attach(conn, dest)
     conn.register("_frame", nw.to_native(frame.collect()))
-    match dest.database_type:
-        case "postgresql":
-            conn.install_extension("postgres_scanner")
-            conn.load_extension("postgres_scanner")
-            conn.execute(f"COPY _frame TO postgres('{dest.connection_string}', '{dest.table_name}')")
-        case "mysql":
-            conn.install_extension("mysql")
-            conn.load_extension("mysql")
-            conn.execute(f"ATTACH '{dest.connection_string}' AS _mysql_db (TYPE mysql)")
-            conn.execute(f"INSERT INTO _mysql_db.{dest.table_name} SELECT * FROM _frame")
-        case _:
-            raise NotImplementedError(f"DuckDB database writer does not support {dest.database_type}")
+
+    target = qualified_table(dest)
+    try:
+        conn.execute(f"INSERT INTO {target} SELECT * FROM _frame")
+    except Exception as e:
+        raise RuntimeError(
+            f"DuckDB failed to write to {dest.database_type} "
+            f"'{dest.schema}.{dest.table_name}': {e}"
+        ) from e

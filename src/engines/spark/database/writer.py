@@ -1,17 +1,18 @@
 from __future__ import annotations
 
-from typing import Any
-
 import narwhals as nw
 
+from engines.spark.database.common import SUPPORTED_DATABASES, qualified_table
 from models.models import DatabaseSource
-
-SUPPORTED_DATABASES = ("postgresql", "mysql", "oracle")
 
 
 def write(frame: nw.LazyFrame, dest: DatabaseSource) -> None:
-    if dest.database_type not in SUPPORTED_DATABASES:
-        raise NotImplementedError(f"Spark database writer does not support {dest.database_type}")
-    nw.to_native(frame).write.format("jdbc").option("url", dest.connection_string).option(
-        "dbtable", dest.table_name
-    ).mode("overwrite").save()
+    try:
+        nw.to_native(frame).write.format("jdbc").option("url", dest.connection_string).option(
+            "dbtable", qualified_table(dest)
+        ).mode("overwrite").save()
+    except Exception as e:
+        raise RuntimeError(
+            f"Spark failed to write to {dest.database_type} "
+            f"'{dest.schema}.{dest.table_name}': {e}"
+        ) from e
