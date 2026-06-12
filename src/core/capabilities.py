@@ -12,7 +12,7 @@ class Capability(ABC):
     @abstractmethod
     def matches(self, other: Capability) -> bool:
         """Check if this capability matches another capability requirement."""
-        raise NotImplementedError
+        raise NotImplementedError()
 
 
 @dataclass
@@ -45,25 +45,6 @@ class SupportsDataSource(Capability):
 
     def __hash__(self) -> int:
         return hash((self.source_type, self.direction))
-
-
-@dataclass
-class SupportsScale(Capability):
-    """Engine can handle datasets within a size range (in MB)."""
-
-    min_mb: int
-    max_mb: int  # -1 means unlimited
-
-    def matches(self, other: Capability) -> bool:
-        if not isinstance(other, SupportsScale):
-            return False
-        # Check if other's range falls within this range
-        if other.max_mb == -1:
-            return self.max_mb == -1
-        return self.min_mb <= other.min_mb and (self.max_mb == -1 or other.max_mb <= self.max_mb)
-
-    def __hash__(self) -> int:
-        return hash((self.min_mb, self.max_mb))
 
 
 @dataclass

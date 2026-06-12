@@ -4,7 +4,6 @@ from core.capabilities import (
     CapabilityRegistry,
     SupportsDataSource,
     SupportsFormat,
-    SupportsScale,
 )
 from models.models import EngineType, FileFormat, PipelineRequest
 
@@ -24,7 +23,6 @@ def build_default_capabilities() -> CapabilityRegistry:
         SupportsFormat(FileFormat.JSON, "write"),
         SupportsDataSource("filesystem", "read"),
         SupportsDataSource("filesystem", "write"),
-        SupportsScale(0, 8192),  # up to 8GB (in-memory)
     )
 
     # Spark capabilities
@@ -42,7 +40,6 @@ def build_default_capabilities() -> CapabilityRegistry:
         SupportsFormat(FileFormat.DELTA, "write"),
         SupportsDataSource("filesystem", "read"),
         SupportsDataSource("filesystem", "write"),
-        SupportsScale(0, -1),  # unlimited (distributed)
     )
 
     return registry
