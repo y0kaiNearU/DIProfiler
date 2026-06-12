@@ -40,14 +40,21 @@ class DuckDBLoader(Loader):
                 case _:
                     raise NotImplementedError(f"DuckDB loader does not support {src.format}")
         elif isinstance(src, DatabaseSource):
-            if src.database_type == "postgresql":
-                conn.install_extension("postgres_scanner")
-                conn.load_extension("postgres_scanner")
-                native = conn.execute(
-                    f"SELECT * FROM postgres_scan('{src.connection_string}', '{src.table_name}')"
-                ).fetch_arrow_table()
-            else:
-                raise NotImplementedError(f"DuckDB loader does not support {src.database_type}")
+            match src.database_type:
+                case "postgresql":
+                    conn.install_extension("postgres_scanner")
+                    conn.load_extension("postgres_scanner")
+                    native = conn.execute(
+                        f"SELECT * FROM postgres_scan('{src.connection_string}', '{src.table_name}')"
+                    ).fetch_arrow_table()
+                case "mysql":
+                    conn.install_extension("mysql")
+                    conn.load_extension("mysql")
+                    native = conn.execute(
+                        f"SELECT * FROM mysql_scan('{src.connection_string}', '{src.table_name}')"
+                    ).fetch_arrow_table()
+                case _:
+                    raise NotImplementedError(f"DuckDB loader does not support {src.database_type}")
         else:
             raise ValueError(f"Unknown source type: {type(src)}")
 

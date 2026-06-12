@@ -42,14 +42,20 @@ class DuckDBWriter(Writer):
                 case _:
                     raise NotImplementedError(f"DuckDB writer does not support {dest.format}")
         elif isinstance(dest, DatabaseSource):
-            if dest.database_type == "postgresql":
-                conn.install_extension("postgres_scanner")
-                conn.load_extension("postgres_scanner")
-                conn.execute(
-                    f"COPY _frame TO postgres('{dest.connection_string}', '{dest.table_name}')"
-                )
-            else:
-                raise NotImplementedError(f"DuckDB writer does not support {dest.database_type}")
+            match dest.database_type:
+                case "postgresql":
+                    conn.install_extension("postgres_scanner")
+                    conn.load_extension("postgres_scanner")
+                    conn.execute(
+                        f"COPY _frame TO postgres('{dest.connection_string}', '{dest.table_name}')"
+                    )
+                case "mysql":
+                    conn.install_extension("mysql")
+                    conn.load_extension("mysql")
+                    conn.execute(f"ATTACH '{dest.connection_string}' AS _mysql_db (TYPE mysql)")
+                    conn.execute(f"INSERT INTO _mysql_db.{dest.table_name} SELECT * FROM _frame")
+                case _:
+                    raise NotImplementedError(f"DuckDB writer does not support {dest.database_type}")
         else:
             raise ValueError(f"Unknown destination type: {type(dest)}")
 

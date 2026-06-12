@@ -25,6 +25,8 @@ def build_default_capabilities() -> CapabilityRegistry:
         SupportsDataSource("filesystem", "write"),
         SupportsDataSource("postgresql", "read"),
         SupportsDataSource("postgresql", "write"),
+        SupportsDataSource("mysql", "read"),
+        SupportsDataSource("mysql", "write"),
     )
 
     # Spark capabilities
@@ -44,6 +46,10 @@ def build_default_capabilities() -> CapabilityRegistry:
         SupportsDataSource("filesystem", "write"),
         SupportsDataSource("postgresql", "read"),
         SupportsDataSource("postgresql", "write"),
+        SupportsDataSource("mysql", "read"),
+        SupportsDataSource("mysql", "write"),
+        SupportsDataSource("oracle", "read"),
+        SupportsDataSource("oracle", "write"),
     )
 
     return registry

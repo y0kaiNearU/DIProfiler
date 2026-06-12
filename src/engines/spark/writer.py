@@ -48,7 +48,7 @@ class SparkWriter(Writer):
                 case _:
                     raise NotImplementedError(f"Spark writer does not support {dest.format}")
         elif isinstance(dest, DatabaseSource):
-            if dest.database_type == "postgresql":
+            if dest.database_type in ("postgresql", "mysql", "oracle"):
                 df.write.format("jdbc").option("url", dest.connection_string).option(
                     "dbtable", dest.table_name
                 ).option("user", "").option("password", "").mode("overwrite").save()

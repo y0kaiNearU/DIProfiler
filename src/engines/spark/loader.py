@@ -47,7 +47,7 @@ class SparkLoader(Loader):
                 case _:
                     raise NotImplementedError(f"Spark loader does not support {src.format}")
         elif isinstance(src, DatabaseSource):
-            if src.database_type == "postgresql":
+            if src.database_type in ("postgresql", "mysql", "oracle"):
                 native = spark.read.format("jdbc").option("url", src.connection_string).option(
                     "dbtable", src.table_name
                 ).load()
