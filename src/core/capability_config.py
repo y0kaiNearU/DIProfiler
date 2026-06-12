@@ -5,7 +5,7 @@ from core.capabilities import (
     SupportsDataSource,
     SupportsFormat,
 )
-from models.models import EngineType, FileFormat, PipelineRequest
+from models.models import EngineType, FileFormat, PipelineRequest, DatabaseSource, FileSource
 
 
 def build_default_capabilities() -> CapabilityRegistry:
@@ -23,6 +23,8 @@ def build_default_capabilities() -> CapabilityRegistry:
         SupportsFormat(FileFormat.JSON, "write"),
         SupportsDataSource("filesystem", "read"),
         SupportsDataSource("filesystem", "write"),
+        SupportsDataSource("postgresql", "read"),
+        SupportsDataSource("postgresql", "write"),
     )
 
     # Spark capabilities
@@ -40,6 +42,8 @@ def build_default_capabilities() -> CapabilityRegistry:
         SupportsFormat(FileFormat.DELTA, "write"),
         SupportsDataSource("filesystem", "read"),
         SupportsDataSource("filesystem", "write"),
+        SupportsDataSource("postgresql", "read"),
+        SupportsDataSource("postgresql", "write"),
     )
 
     return registry
@@ -49,13 +53,20 @@ def build_required_capabilities(request: PipelineRequest) -> list:
     """Build list of capabilities required by request."""
     caps = []
 
-    caps.append(SupportsFormat(request.source.format, "read"))
+    # Source capabilities
+    if isinstance(request.source.source, FileSource):
+        caps.append(SupportsFormat(request.source.source.format, "read"))
+        caps.append(SupportsDataSource("filesystem", "read"))
+    elif isinstance(request.source.source, DatabaseSource):
+        caps.append(SupportsDataSource(request.source.source.database_type, "read"))
 
+    # Destination capabilities
     if request.destination is not None:
-        caps.append(SupportsFormat(request.destination.format, "write"))
-        
-    caps.append(SupportsDataSource("filesystem", "read"))
-    if request.destination is not None:
-        caps.append(SupportsDataSource("filesystem", "write"))
+        if isinstance(request.destination.source, FileSource):
+            caps.append(SupportsFormat(request.destination.source.format, "write"))
+            caps.append(SupportsDataSource("filesystem", "write"))
+        elif isinstance(request.destination.source, DatabaseSource):
+            caps.append(SupportsDataSource(request.destination.source.database_type, "write"))
 
     return caps
+
