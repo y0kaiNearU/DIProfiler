@@ -3,8 +3,8 @@ from __future__ import annotations
 import dataclasses
 import importlib.util
 
-import narwhals as nw
-
+from core.capability_config import build_default_capabilities, build_required_capabilities
+from core.capabilities import CapabilityRegistry
 from core.loader import Loader
 from core.profiler import Profiler
 from core.registry import LoaderRegistry, ProfilerRegistry, WriterRegistry
@@ -28,22 +28,22 @@ def _detect_available_engines() -> list[EngineType]:
 
 class DIProfiler:
     """
-    Profiles datasets and provides engine recommendations, loading, and writing utilities.
+    Profiles datasets and provides capability-aware engine recommendations.
+
+    Only recommends engines that can actually handle the source and destination formats.
 
     Usage:
         profiler = DIProfiler()
+        result = profiler.recommend(request)  # Only viable engines recommended
+        engine = result.recommendations[0].engine
 
-        # Profile and get engine recommendation
-        result = profiler.recommend(request)
-
-        # Load into a narwhals LazyFrame
-        frame = profiler.load(request)
-
-        # Apply custom transforms (not provided by DIProfiler)
-        frame = my_transforms(frame)
-
-        # Write the frame
-        profiler.write(frame, request)
+        # Use FrameLoader/FrameWriter for I/O
+        from core.io import FrameLoader, FrameWriter
+        loader = FrameLoader(engine)
+        frame = loader.load(request)
+        frame = frame.filter(...)  # narwhals transforms
+        writer = FrameWriter(engine)
+        writer.write(frame, request)
     """
 
     def __init__(
@@ -51,6 +51,7 @@ class DIProfiler:
         profilers: list[Profiler] | None = None,
         loaders: list[Loader] | None = None,
         writers: list[Writer] | None = None,
+        capability_registry: CapabilityRegistry | None = None,
         available_engines: list[EngineType] | None = None,
     ) -> None:
         self._available_engines = available_engines if available_engines is not None else _detect_available_engines()
@@ -67,16 +68,31 @@ class DIProfiler:
         for writer in writers or [DuckDBWriter(), SparkWriter()]:
             self._writer_registry.register(writer)
 
+        self._capabilities = capability_registry or build_default_capabilities()
+
     # ------------------------------------------------------------------ #
     # Public API                                                           #
     # ------------------------------------------------------------------ #
 
     def recommend(self, request: PipelineRequest) -> ProfilingResult:
-        """Run all profilers and return engine recommendations."""
+        """Run all profilers and return engine recommendations, filtered by capabilities."""
         stamped = dataclasses.replace(request, available_engines=self._available_engines)
         results = self._profiler_registry.run(stamped)
         if not results:
             raise RuntimeError("No profiler could handle this request.")
+
+        # Build required capabilities from request
+        required_caps = build_required_capabilities(request)
+
+        # Filter recommendations to only engines that satisfy required capabilities
+        for result in results:
+            viable_recs = [
+                rec for rec in result.recommendations
+                if self._capabilities.can_handle(rec.engine, required_caps)
+            ]
+            result.recommendations = viable_recs
+
+        # Merge recommendations from all profilers
         merged = {}
         for result in results:
             for rec in result.recommendations:
@@ -84,35 +100,13 @@ class DIProfiler:
                     merged[rec.engine] = rec
         best = results[0]
         best.recommendations = sorted(merged.values(), key=lambda r: r.confidence, reverse=True)
+
+        if not best.recommendations:
+            raise RuntimeError(
+                "No engine can handle this request. "
+                "No available engine supports the required capabilities: "
+                f"source format {request.source.format.value}, "
+                f"{'destination format ' + request.destination.format.value if request.destination else 'no destination'}."
+            )
         return best
 
-    def load(self, request: PipelineRequest) -> nw.LazyFrame:
-        """Profile and load the source dataset into a narwhals LazyFrame."""
-        engine = self._resolve_engine(request)
-        loader = self._loader_registry.get(engine)
-        if not loader.can_load(request):
-            raise NotImplementedError(f"{engine.value} loader does not support format {request.source.format.value}")
-        return loader.load(request)
-
-    def write(self, frame: nw.LazyFrame, request: PipelineRequest) -> None:
-        """Write a narwhals LazyFrame to the destination specified in request."""
-        if request.destination is None:
-            raise ValueError("PipelineRequest has no destination set.")
-        engine = self._resolve_engine(request)
-        writer = self._writer_registry.get(engine)
-        if not writer.can_write(request):
-            raise NotImplementedError(f"{engine.value} writer does not support format {request.destination.format.value}")
-        writer.write(frame, request)
-
-    # ------------------------------------------------------------------ #
-    # Internal                                                             #
-    # ------------------------------------------------------------------ #
-
-    def _resolve_engine(self, request: PipelineRequest) -> EngineType:
-        profiling = self.recommend(request)
-        if not profiling.recommendations:
-            raise RuntimeError(
-                f"No available engine can handle this request. "
-                f"Install one of: {[e.value for e in EngineType]}"
-            )
-        return profiling.recommendations[0].engine
