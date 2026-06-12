@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional
+from typing import Optional, Union
 
 
 class FileFormat(Enum):
@@ -25,9 +25,28 @@ class OperationType(Enum):
 
 
 @dataclass
-class DatasetInfo:
+class FileSource:
+    """Source data from a file system."""
+
     path: str
     format: FileFormat
+
+
+@dataclass
+class DatabaseSource:
+    """Source data from a database."""
+
+    connection_string: str
+    table_name: str
+    database_type: str  # "postgresql", "mysql", "snowflake", etc.
+
+
+DatasetSource = Union[FileSource, DatabaseSource]
+
+
+@dataclass
+class DatasetInfo:
+    source: DatasetSource
     size_bytes: Optional[int] = None
     row_count: Optional[int] = None
     num_columns: Optional[int] = None
