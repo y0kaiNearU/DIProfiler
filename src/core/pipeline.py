@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 import importlib.util
+from typing import Any, Callable
 
 from core.capability_config import build_default_capabilities, build_required_capabilities
 from core.capabilities import CapabilityRegistry
@@ -53,6 +54,7 @@ class DIProfiler:
         writers: list[Writer] | None = None,
         capability_registry: CapabilityRegistry | None = None,
         available_engines: list[EngineType] | None = None,
+        engine_factories: dict[EngineType, Callable[[], Any]] | None = None,
     ) -> None:
         self._available_engines = available_engines if available_engines is not None else _detect_available_engines()
 
@@ -60,13 +62,21 @@ class DIProfiler:
         for p in profilers or [RuleBasedEngineProfiler()]:
             self._profiler_registry.register(p)
 
+        factories = engine_factories or {}
+        duckdb_factory = factories.get(EngineType.DUCKDB)
+        spark_factory = factories.get(EngineType.SPARK)
+
         self._loader_registry = LoaderRegistry()
-        for loader in loaders or [DuckDBLoader(), SparkLoader()]:
-            self._loader_registry.register(loader)
+        self._loader_registry.register(*(loaders or [
+            DuckDBLoader(factory=duckdb_factory),
+            SparkLoader(factory=spark_factory),
+        ]))
 
         self._writer_registry = WriterRegistry()
-        for writer in writers or [DuckDBWriter(), SparkWriter()]:
-            self._writer_registry.register(writer)
+        self._writer_registry.register(*(writers or [
+            DuckDBWriter(factory=duckdb_factory),
+            SparkWriter(factory=spark_factory),
+        ]))
 
         self._capabilities = capability_registry or build_default_capabilities()
 

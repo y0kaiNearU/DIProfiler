@@ -36,44 +36,42 @@ class ProfilerRegistry:
 class LoaderRegistry:
 
     def __init__(self) -> None:
-        self._loaders: dict[EngineType, Loader] = {}
+        self._loaders: list[Loader] = []
 
-    def register(self, loader: Loader) -> None:
-        if loader.engine in self._loaders:
-            raise ValueError(f"Loader for '{loader.engine.value}' is already registered.")
-        self._loaders[loader.engine] = loader
+    def register(self, *loaders: Loader) -> None:
+        self._loaders.extend(loaders)
 
     def unregister(self, engine: EngineType) -> None:
-        self._loaders.pop(engine, None)
+        self._loaders = [l for l in self._loaders if l.engine != engine]
 
-    def get(self, engine: EngineType) -> Loader:
-        if engine not in self._loaders:
-            raise KeyError(f"No loader registered for engine '{engine.value}'.")
-        return self._loaders[engine]
+    def resolve(self, engine: EngineType, request: PipelineRequest) -> Loader:
+        for loader in self._loaders:
+            if loader.engine == engine and loader.can_load(request):
+                return loader
+        raise KeyError(f"No loader for engine '{engine.value}' that can handle this request.")
 
     @property
     def engines(self) -> list[EngineType]:
-        return list(self._loaders)
+        return list({l.engine for l in self._loaders})
 
 
 class WriterRegistry:
 
     def __init__(self) -> None:
-        self._writers: dict[EngineType, Writer] = {}
+        self._writers: list[Writer] = []
 
-    def register(self, writer: Writer) -> None:
-        if writer.engine in self._writers:
-            raise ValueError(f"Writer for '{writer.engine.value}' is already registered.")
-        self._writers[writer.engine] = writer
+    def register(self, *writers: Writer) -> None:
+        self._writers.extend(writers)
 
     def unregister(self, engine: EngineType) -> None:
-        self._writers.pop(engine, None)
+        self._writers = [w for w in self._writers if w.engine != engine]
 
-    def get(self, engine: EngineType) -> Writer:
-        if engine not in self._writers:
-            raise KeyError(f"No writer registered for engine '{engine.value}'.")
-        return self._writers[engine]
+    def resolve(self, engine: EngineType, request: PipelineRequest) -> Writer:
+        for writer in self._writers:
+            if writer.engine == engine and writer.can_write(request):
+                return writer
+        raise KeyError(f"No writer for engine '{engine.value}' that can handle this request.")
 
     @property
     def engines(self) -> list[EngineType]:
-        return list(self._writers)
+        return list({w.engine for w in self._writers})

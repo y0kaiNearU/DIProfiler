@@ -3,10 +3,13 @@ from __future__ import annotations
 import narwhals as nw
 
 from core.loader import Loader
-from models.models import DatabaseSource, EngineType, FileFormat, FileSource, PipelineRequest
+from engines.spark.base import SparkBase
+from engines.spark.database import loader as db_loader
+from engines.spark.file import loader as file_loader
+from models.models import DatabaseSource, EngineType, FileSource, PipelineRequest
 
 
-class SparkLoader(Loader):
+class SparkLoader(SparkBase, Loader):
 
     @property
     def engine(self) -> EngineType:
@@ -15,46 +18,15 @@ class SparkLoader(Loader):
     def can_load(self, request: PipelineRequest) -> bool:
         src = request.source.source
         if isinstance(src, FileSource):
-            return src.format in (
-                FileFormat.CSV, FileFormat.PARQUET, FileFormat.JSON,
-                FileFormat.ORC, FileFormat.DELTA,
-            )
-        elif isinstance(src, DatabaseSource):
-            return src.database_type == "postgresql"
+            return src.format in file_loader.SUPPORTED_FORMATS
+        if isinstance(src, DatabaseSource):
+            return src.database_type in db_loader.SUPPORTED_DATABASES
         return False
 
     def load(self, request: PipelineRequest) -> nw.LazyFrame:
-        try:
-            from pyspark.sql import SparkSession
-        except ImportError as e:
-            raise ImportError("PySpark is required: uv add 'diprofiler[spark]'") from e
-
-        spark = SparkSession.builder.getOrCreate()
         src = request.source.source
-
         if isinstance(src, FileSource):
-            match src.format:
-                case FileFormat.CSV:
-                    native = spark.read.option("header", "true").option("inferSchema", "true").csv(src.path)
-                case FileFormat.PARQUET:
-                    native = spark.read.parquet(src.path)
-                case FileFormat.JSON:
-                    native = spark.read.json(src.path)
-                case FileFormat.ORC:
-                    native = spark.read.orc(src.path)
-                case FileFormat.DELTA:
-                    native = spark.read.format("delta").load(src.path)
-                case _:
-                    raise NotImplementedError(f"Spark loader does not support {src.format}")
-        elif isinstance(src, DatabaseSource):
-            if src.database_type in ("postgresql", "mysql", "oracle"):
-                native = spark.read.format("jdbc").option("url", src.connection_string).option(
-                    "dbtable", src.table_name
-                ).load()
-            else:
-                raise NotImplementedError(f"Spark loader does not support {src.database_type}")
-        else:
-            raise ValueError(f"Unknown source type: {type(src)}")
-
-        return nw.from_native(native)
-
+            return file_loader.load(self._get_session(), src)
+        if isinstance(src, DatabaseSource):
+            return db_loader.load(self._get_session(), src)
+        raise ValueError(f"Unknown source type: {type(src)}")

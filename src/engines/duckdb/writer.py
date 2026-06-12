@@ -3,59 +3,32 @@ from __future__ import annotations
 import narwhals as nw
 
 from core.writer import Writer
-from models.models import DatabaseSource, EngineType, FileFormat, FileSource, PipelineRequest
+from engines.duckdb.base import DuckDBBase
+from engines.duckdb.database import writer as db_writer
+from engines.duckdb.file import writer as file_writer
+from models.models import DatabaseSource, EngineType, FileSource, PipelineRequest
 
 
-class DuckDBWriter(Writer):
+class DuckDBWriter(DuckDBBase, Writer):
 
     @property
     def engine(self) -> EngineType:
         return EngineType.DUCKDB
 
     def can_write(self, request: PipelineRequest) -> bool:
+        if request.destination is None:
+            return False
         dest = request.destination.source
         if isinstance(dest, FileSource):
-            return dest.format in (FileFormat.CSV, FileFormat.PARQUET, FileFormat.JSON)
-        elif isinstance(dest, DatabaseSource):
-            return dest.database_type == "postgresql"
+            return dest.format in file_writer.SUPPORTED_FORMATS
+        if isinstance(dest, DatabaseSource):
+            return dest.database_type in db_writer.SUPPORTED_DATABASES
         return False
 
     def write(self, frame: nw.LazyFrame, request: PipelineRequest) -> None:
-        try:
-            import duckdb
-        except ImportError as e:
-            raise ImportError("DuckDB is required: uv add duckdb") from e
-
         dest = request.destination.source
-        rel = nw.to_native(frame)
-        conn = duckdb.connect()
-        conn.register("_frame", rel)
-
         if isinstance(dest, FileSource):
-            match dest.format:
-                case FileFormat.PARQUET:
-                    conn.execute(f"COPY _frame TO '{dest.path}' (FORMAT parquet)")
-                case FileFormat.CSV:
-                    conn.execute(f"COPY _frame TO '{dest.path}' (FORMAT csv, HEADER TRUE)")
-                case FileFormat.JSON:
-                    conn.execute(f"COPY _frame TO '{dest.path}' (FORMAT json)")
-                case _:
-                    raise NotImplementedError(f"DuckDB writer does not support {dest.format}")
-        elif isinstance(dest, DatabaseSource):
-            match dest.database_type:
-                case "postgresql":
-                    conn.install_extension("postgres_scanner")
-                    conn.load_extension("postgres_scanner")
-                    conn.execute(
-                        f"COPY _frame TO postgres('{dest.connection_string}', '{dest.table_name}')"
-                    )
-                case "mysql":
-                    conn.install_extension("mysql")
-                    conn.load_extension("mysql")
-                    conn.execute(f"ATTACH '{dest.connection_string}' AS _mysql_db (TYPE mysql)")
-                    conn.execute(f"INSERT INTO _mysql_db.{dest.table_name} SELECT * FROM _frame")
-                case _:
-                    raise NotImplementedError(f"DuckDB writer does not support {dest.database_type}")
-        else:
-            raise ValueError(f"Unknown destination type: {type(dest)}")
-
+            return file_writer.write(self._get_connection(), frame, dest)
+        if isinstance(dest, DatabaseSource):
+            return db_writer.write(self._get_connection(), frame, dest)
+        raise ValueError(f"Unknown destination type: {type(dest)}")
