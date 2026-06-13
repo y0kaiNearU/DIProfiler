@@ -25,12 +25,20 @@ class OperationType(Enum):
     WINDOW = "window"
 
 
+class WriteMode(Enum):
+    OVERWRITE = "overwrite"
+    APPEND = "append"
+    IGNORE = "ignore"
+    ERROR = "error"
+
+
 @dataclass
 class FileSource:
     """Source data from a file system."""
 
     path: str
     format: FileFormat
+    write_mode: WriteMode = WriteMode.OVERWRITE
 
 
 @dataclass
@@ -42,6 +50,7 @@ class DatabaseSource:
     database_type: str  # "postgresql", "mysql", "snowflake", etc.
     schema: str = "public"
     query: Optional[str] = None  # DuckDB SQL run against the attached DB as '_db'; overrides table_name
+    write_mode: WriteMode = WriteMode.OVERWRITE
 
 
 DatasetSource = Union[FileSource, DatabaseSource]
