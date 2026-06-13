@@ -15,6 +15,7 @@ class FileFormat(Enum):
 class EngineType(Enum):
     DUCKDB = "duckdb"
     SPARK = "spark"
+    DATAFUSION = "datafusion"
 
 
 class OperationType(Enum):

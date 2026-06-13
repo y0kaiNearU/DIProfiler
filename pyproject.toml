@@ -13,6 +13,7 @@ dependencies = [
 [project.optional-dependencies]
 duckdb = ["duckdb>=1.0"]
 spark = ["pyspark>=3.5"]
+datafusion = ["datafusion>=40.0", "pyarrow>=17.0"]
 dev = [
     "pytest>=8.0",
     "ruff>=0.4",

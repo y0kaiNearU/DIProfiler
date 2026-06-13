@@ -10,6 +10,8 @@ from core.loader import Loader
 from core.profiler import Profiler
 from core.registry import LoaderRegistry, ProfilerRegistry, WriterRegistry
 from core.writer import Writer
+from engines.datafusion.loader import DataFusionLoader
+from engines.datafusion.writer import DataFusionWriter
 from engines.duckdb.loader import DuckDBLoader
 from engines.duckdb.writer import DuckDBWriter
 from engines.spark.loader import SparkLoader
@@ -20,6 +22,7 @@ from profilers.engine_profiler import RuleBasedEngineProfiler
 _ENGINE_MODULES: dict[EngineType, str] = {
     EngineType.DUCKDB: "duckdb",
     EngineType.SPARK: "pyspark",
+    EngineType.DATAFUSION: "datafusion",
 }
 
 
@@ -65,17 +68,20 @@ class DIProfiler:
         factories = engine_factories or {}
         duckdb_factory = factories.get(EngineType.DUCKDB)
         spark_factory = factories.get(EngineType.SPARK)
+        datafusion_factory = factories.get(EngineType.DATAFUSION)
 
         self._loader_registry = LoaderRegistry()
         self._loader_registry.register(*(loaders or [
             DuckDBLoader(factory=duckdb_factory),
             SparkLoader(factory=spark_factory),
+            DataFusionLoader(factory=datafusion_factory),
         ]))
 
         self._writer_registry = WriterRegistry()
         self._writer_registry.register(*(writers or [
             DuckDBWriter(factory=duckdb_factory),
             SparkWriter(factory=spark_factory),
+            DataFusionWriter(factory=datafusion_factory),
         ]))
 
         self._capabilities = capability_registry or build_default_capabilities()

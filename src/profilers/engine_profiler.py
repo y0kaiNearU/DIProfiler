@@ -6,6 +6,7 @@ from models.models import (
     EngineRecommendation,
     EngineType,
     FileFormat,
+    FileSource,
     OperationType,
     PipelineRequest,
     ProfilingResult,
@@ -37,6 +38,15 @@ def _size_bytes_rule(req: PipelineRequest) -> Vote | None:
     return None
 
 
+def _datafusion_size_rule(req: PipelineRequest) -> Vote | None:
+    size = req.source.size_bytes
+    if size is None:
+        return None
+    if size <= _MEDIUM_DATASET_BYTES:
+        return EngineType.DATAFUSION, 0.55, f"dataset size {size / _GB:.2f} GB suits DataFusion's single-node Arrow execution"
+    return None
+
+
 def _row_count_rule(req: PipelineRequest) -> Vote | None:
     rows = req.source.row_count
     if rows is None:
@@ -46,17 +56,33 @@ def _row_count_rule(req: PipelineRequest) -> Vote | None:
     return EngineType.DUCKDB, 0.4, f"{rows:,} rows is well within single-node capacity"
 
 
+def _datafusion_row_count_rule(req: PipelineRequest) -> Vote | None:
+    rows = req.source.row_count
+    if rows is None:
+        return None
+    if rows < _LARGE_ROW_COUNT:
+        return EngineType.DATAFUSION, 0.35, f"{rows:,} rows is well within DataFusion's single-node capacity"
+    return None
+
+
 def _format_rule(req: PipelineRequest) -> Vote | None:
-    fmt = req.source.format
+    src = req.source.source
+    if not isinstance(src, FileSource):
+        return None
+    fmt = src.format
     if fmt in (FileFormat.ORC, FileFormat.DELTA):
         return EngineType.SPARK, 0.4, f"{fmt.value} format is native to the Spark/Hadoop ecosystem"
-    if fmt in (FileFormat.CSV, FileFormat.PARQUET, FileFormat.JSON):
+    if fmt == FileFormat.PARQUET:
+        return EngineType.DATAFUSION, 0.35, f"Parquet is Arrow-native; DataFusion reads it without conversion overhead"
+    if fmt in (FileFormat.CSV, FileFormat.JSON):
         return EngineType.DUCKDB, 0.3, f"{fmt.value} is natively supported by DuckDB"
     return None
 
 
 def _operation_rule(req: PipelineRequest) -> Vote | None:
-    ops = set(req.operations)
+    ops = set(getattr(req, "operations", []))
+    if not ops:
+        return None
     heavy_ops = {OperationType.JOIN, OperationType.WINDOW}
     if heavy_ops & ops and req.source.size_bytes and req.source.size_bytes >= _MEDIUM_DATASET_BYTES:
         return EngineType.SPARK, 0.4, f"heavy operations {[o.value for o in heavy_ops & ops]} on a large dataset favour Spark"
@@ -66,7 +92,9 @@ def _operation_rule(req: PipelineRequest) -> Vote | None:
 _RULES: list[Rule] = [
     _required_engine_rule,
     _size_bytes_rule,
+    _datafusion_size_rule,
     _row_count_rule,
+    _datafusion_row_count_rule,
     _format_rule,
     _operation_rule,
 ]
