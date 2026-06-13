@@ -10,7 +10,7 @@ def write(frame: nw.LazyFrame, dest: DatabaseSource) -> None:
     try:
         nw.to_native(frame).write.format("jdbc").option("url", dest.connection_string).option(
             "dbtable", qualified_table(dest)
-        ).mode("overwrite").save()
+        ).mode(dest.write_mode.value).save()
     except Exception as e:
         raise RuntimeError(
             f"Spark failed to write to {dest.database_type} "

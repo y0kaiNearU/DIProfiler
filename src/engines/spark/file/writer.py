@@ -13,7 +13,7 @@ SUPPORTED_FORMATS = (
 
 
 def write(frame: nw.LazyFrame, dest: FileSource) -> None:
-    writer = nw.to_native(frame).write.mode("overwrite")
+    writer = nw.to_native(frame).write.mode(dest.write_mode.value)
     match dest.format:
         case FileFormat.PARQUET:
             writer.parquet(dest.path)

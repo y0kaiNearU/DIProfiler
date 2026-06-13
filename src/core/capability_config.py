@@ -27,6 +27,8 @@ def build_default_capabilities() -> CapabilityRegistry:
         SupportsDataSource("postgresql", "write"),
         SupportsDataSource("mysql", "read"),
         SupportsDataSource("mysql", "write"),
+        SupportsDataSource("sqlite", "read"),
+        SupportsDataSource("sqlite", "write"),
     )
 
     # Spark capabilities
