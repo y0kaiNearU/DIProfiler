@@ -8,7 +8,7 @@ from models.models import FileFormat, FileSource
 
 SUPPORTED_FORMATS = (
     FileFormat.CSV, FileFormat.PARQUET, FileFormat.JSON,
-    FileFormat.ORC, FileFormat.DELTA,
+    FileFormat.ORC, FileFormat.DELTA, FileFormat.ICEBERG,
 )
 
 
@@ -25,5 +25,7 @@ def write(frame: nw.LazyFrame, dest: FileSource) -> None:
             writer.orc(dest.path)
         case FileFormat.DELTA:
             writer.format("delta").save(dest.path)
+        case FileFormat.ICEBERG:
+            writer.format("iceberg").save(dest.path)
         case _:
             raise NotImplementedError(f"Spark file writer does not support {dest.format}")

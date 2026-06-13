@@ -8,7 +8,7 @@ from models.models import FileFormat, FileSource
 
 SUPPORTED_FORMATS = (
     FileFormat.CSV, FileFormat.PARQUET, FileFormat.JSON,
-    FileFormat.ORC, FileFormat.DELTA,
+    FileFormat.ORC, FileFormat.DELTA, FileFormat.ICEBERG,
 )
 
 
@@ -24,6 +24,8 @@ def load(spark: Any, src: FileSource) -> nw.LazyFrame:
             native = spark.read.orc(src.path)
         case FileFormat.DELTA:
             native = spark.read.format("delta").load(src.path)
+        case FileFormat.ICEBERG:
+            native = spark.read.format("iceberg").load(src.path)
         case _:
             raise NotImplementedError(f"Spark file loader does not support {src.format}")
     return nw.from_native(native)

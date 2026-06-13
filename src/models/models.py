@@ -9,6 +9,7 @@ class FileFormat(Enum):
     JSON = "json"
     ORC = "orc"
     DELTA = "delta"
+    ICEBERG = "iceberg"
 
 
 class EngineType(Enum):
