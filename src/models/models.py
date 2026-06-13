@@ -49,7 +49,7 @@ class DatabaseSource:
     table_name: str
     database_type: str  # "postgresql", "mysql", "snowflake", etc.
     schema: str = "public"
-    query: Optional[str] = None  # DuckDB SQL run against the attached DB as '_db'; overrides table_name
+    queries: dict[EngineType, str] = field(default_factory=dict)  # engine-specific SQL, overrides table_name
     write_mode: WriteMode = WriteMode.OVERWRITE
 
 

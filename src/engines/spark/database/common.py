@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from models.models import DatabaseSource
+from models.models import DatabaseSource, EngineType
 
 SUPPORTED_DATABASES = ("postgresql", "mysql", "oracle")
 
@@ -19,8 +19,9 @@ def qualified_table(src: DatabaseSource) -> str:
 def jdbc_reader(spark: Any, src: DatabaseSource) -> Any:
     """Build a Spark JDBC DataFrameReader, using query pushdown if set."""
     reader = spark.read.format("jdbc").option("url", src.connection_string)
-    if src.query:
-        reader = reader.option("query", src.query)
+    query = src.queries.get(EngineType.SPARK)
+    if query:
+        reader = reader.option("query", query)
     else:
         reader = reader.option("dbtable", qualified_table(src))
     return reader
