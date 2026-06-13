@@ -7,11 +7,13 @@ from models.models import DatabaseSource
 _EXTENSIONS = {
     "postgresql": "postgres_scanner",
     "mysql": "mysql",
+    "sqlite": "sqlite",
 }
 
 _ATTACH_TYPES = {
     "postgresql": "postgres",
     "mysql": "mysql",
+    "sqlite": "sqlite",
 }
 
 

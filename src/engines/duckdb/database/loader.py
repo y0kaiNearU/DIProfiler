@@ -7,7 +7,7 @@ import narwhals as nw
 from engines.duckdb.database.common import attach, qualified_table, setup_extension
 from models.models import DatabaseSource
 
-SUPPORTED_DATABASES = ("postgresql", "mysql")
+SUPPORTED_DATABASES = ("postgresql", "mysql", "sqlite")
 
 
 def load(conn: Any, src: DatabaseSource) -> nw.LazyFrame:
