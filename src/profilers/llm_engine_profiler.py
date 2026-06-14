@@ -140,7 +140,6 @@ class LLMEngineProfiler(Profiler):
         response = client.messages.create(
             model=self._model,
             max_tokens=2048,
-            thinking={"type": "adaptive"},
             system=_SYSTEM_PROMPT,
             tools=[_RECOMMEND_TOOL],
             tool_choice={"type": "tool", "name": "recommend_engines"},
