@@ -1,9 +1,3 @@
-"""
-Example 1 -Rule-Based Engine Profiler
-
-Shows how RuleBasedEngineProfiler maps dataset characteristics to engine recommendations
-without any ML. Good for understanding the decision logic before introducing the ML profiler.
-"""
 import sys
 from pathlib import Path
 
