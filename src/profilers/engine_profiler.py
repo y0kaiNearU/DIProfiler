@@ -80,7 +80,7 @@ def _format_rule(req: PipelineRequest) -> Vote | None:
 
 
 def _operation_rule(req: PipelineRequest) -> Vote | None:
-    ops = set(getattr(req, "operations", []))
+    ops = set(req.operations)
     if not ops:
         return None
     heavy_ops = {OperationType.JOIN, OperationType.WINDOW}
@@ -89,7 +89,7 @@ def _operation_rule(req: PipelineRequest) -> Vote | None:
     return None
 
 
-_RULES: list[Rule] = [
+DEFAULT_RULES: list[Rule] = [
     _required_engine_rule,
     _size_bytes_rule,
     _datafusion_size_rule,
@@ -115,6 +115,9 @@ class _Tally:
 
 class RuleBasedEngineProfiler(Profiler):
 
+    def __init__(self, rules: list[Rule] | None = None) -> None:
+        self._rules = rules if rules is not None else list(DEFAULT_RULES)
+
     @property
     def name(self) -> str:
         return "rule_based_engine_profiler"
@@ -126,7 +129,7 @@ class RuleBasedEngineProfiler(Profiler):
         available = set(request.available_engines)
         tallies: dict[EngineType, _Tally] = {e: _Tally() for e in available}
 
-        for rule in _RULES:
+        for rule in self._rules:
             vote = rule(request)
             if vote is not None:
                 engine, weight, reason = vote
