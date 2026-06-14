@@ -12,7 +12,6 @@ dependencies = [
 
 [project.optional-dependencies]
 duckdb = ["duckdb>=1.0"]
-spark = ["pyspark>=3.5"]
 datafusion = ["datafusion>=40.0", "pyarrow>=17.0"]
 llm = ["anthropic>=0.40"]
 dev = [
@@ -23,5 +22,14 @@ dev = [
 [tool.uv]
 package = false
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
 [tool.ruff.lint]
 select = ["E", "F", "I"]
+
+[dependency-groups]
+dev = [
+    "reportlab>=4.5.1",
+]
