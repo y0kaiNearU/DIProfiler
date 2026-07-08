@@ -16,6 +16,7 @@ class EngineType(Enum):
     DUCKDB = "duckdb"
     SPARK = "spark"
     DATAFUSION = "datafusion"
+    POLARS = "polars"
 
 
 class OperationType(Enum):

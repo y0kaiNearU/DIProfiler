@@ -69,6 +69,19 @@ def build_default_capabilities() -> CapabilityRegistry:
         SupportsDataSource("oracle", "write"),
     )
 
+    # Polars capabilities
+    registry.register(
+        EngineType.POLARS,
+        SupportsFormat(FileFormat.CSV, "read"),
+        SupportsFormat(FileFormat.PARQUET, "read"),
+        SupportsFormat(FileFormat.JSON, "read"),
+        SupportsFormat(FileFormat.CSV, "write"),
+        SupportsFormat(FileFormat.PARQUET, "write"),
+        SupportsFormat(FileFormat.JSON, "write"),
+        SupportsDataSource("filesystem", "read"),
+        SupportsDataSource("filesystem", "write"),
+    )
+
     return registry
 
 

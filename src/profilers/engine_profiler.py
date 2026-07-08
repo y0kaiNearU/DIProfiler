@@ -19,6 +19,7 @@ _GB = 1024 ** 3
 _LARGE_DATASET_BYTES = 10 * _GB
 _MEDIUM_DATASET_BYTES = 1 * _GB
 _LARGE_ROW_COUNT = 100_000_000
+_POLARS_MAX_BYTES = 4 * _GB
 
 
 def _required_engine_rule(req: PipelineRequest) -> Vote | None:
@@ -65,6 +66,24 @@ def _datafusion_row_count_rule(req: PipelineRequest) -> Vote | None:
     return None
 
 
+def _polars_size_rule(req: PipelineRequest) -> Vote | None:
+    size = req.source.size_bytes
+    if size is None:
+        return None
+    if size <= _POLARS_MAX_BYTES:
+        return EngineType.POLARS, 0.45, f"dataset size {size / _GB:.2f} GB fits comfortably in Polars' in-memory, multi-threaded engine"
+    return None
+
+
+def _polars_row_count_rule(req: PipelineRequest) -> Vote | None:
+    rows = req.source.row_count
+    if rows is None:
+        return None
+    if rows < _LARGE_ROW_COUNT:
+        return EngineType.POLARS, 0.3, f"{rows:,} rows is comfortable for Polars' in-memory execution"
+    return None
+
+
 def _format_rule(req: PipelineRequest) -> Vote | None:
     src = req.source.source
     if not isinstance(src, FileSource):
@@ -93,8 +112,10 @@ DEFAULT_RULES: list[Rule] = [
     _required_engine_rule,
     _size_bytes_rule,
     _datafusion_size_rule,
+    _polars_size_rule,
     _row_count_rule,
     _datafusion_row_count_rule,
+    _polars_row_count_rule,
     _format_rule,
     _operation_rule,
 ]

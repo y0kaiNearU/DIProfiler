@@ -119,6 +119,15 @@ class TestBuildDefaultCapabilities:
     def test_spark_reads_oracle(self):
         assert self.caps.can_handle(EngineType.SPARK, [SupportsDataSource("oracle", "read")])
 
+    def test_polars_reads_parquet(self):
+        assert self.caps.can_handle(EngineType.POLARS, [SupportsFormat(FileFormat.PARQUET, "read")])
+
+    def test_polars_does_not_read_orc(self):
+        assert not self.caps.can_handle(EngineType.POLARS, [SupportsFormat(FileFormat.ORC, "read")])
+
+    def test_polars_does_not_read_postgresql(self):
+        assert not self.caps.can_handle(EngineType.POLARS, [SupportsDataSource("postgresql", "read")])
+
 
 class TestBuildRequiredCapabilities:
     def _file_req(self, fmt, dst_fmt=None):

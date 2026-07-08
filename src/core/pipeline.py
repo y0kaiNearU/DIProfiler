@@ -14,20 +14,32 @@ from engines.datafusion.loader import DataFusionLoader
 from engines.datafusion.writer import DataFusionWriter
 from engines.duckdb.loader import DuckDBLoader
 from engines.duckdb.writer import DuckDBWriter
+from engines.polars.loader import PolarsLoader
+from engines.polars.writer import PolarsWriter
 from engines.spark.loader import SparkLoader
 from engines.spark.writer import SparkWriter
-from models.models import EngineType, PipelineRequest, ProfilingResult
+from models.models import DatabaseSource, DatasetInfo, EngineType, FileSource, PipelineRequest, ProfilingResult
 from profilers.engine_profiler import RuleBasedEngineProfiler
 
 _ENGINE_MODULES: dict[EngineType, str] = {
     EngineType.DUCKDB: "duckdb",
     EngineType.SPARK: "pyspark",
     EngineType.DATAFUSION: "datafusion",
+    EngineType.POLARS: "polars",
 }
 
 
 def _detect_available_engines() -> list[EngineType]:
     return [e for e, mod in _ENGINE_MODULES.items() if importlib.util.find_spec(mod) is not None]
+
+
+def _describe_source(info: DatasetInfo) -> str:
+    src = info.source
+    if isinstance(src, FileSource):
+        return f"{src.format.value} file"
+    if isinstance(src, DatabaseSource):
+        return f"{src.database_type} database"
+    return type(src).__name__
 
 
 class DIProfiler:
@@ -75,6 +87,7 @@ class DIProfiler:
             DuckDBLoader(factory=duckdb_factory),
             SparkLoader(factory=spark_factory),
             DataFusionLoader(factory=datafusion_factory),
+            PolarsLoader(),
         ]))
 
         self._writer_registry = WriterRegistry()
@@ -82,6 +95,7 @@ class DIProfiler:
             DuckDBWriter(factory=duckdb_factory),
             SparkWriter(factory=spark_factory),
             DataFusionWriter(factory=datafusion_factory),
+            PolarsWriter(),
         ]))
 
         self._capabilities = capability_registry or build_default_capabilities()
@@ -118,11 +132,13 @@ class DIProfiler:
         best.recommendations = sorted(merged.values(), key=lambda r: r.confidence, reverse=True)
 
         if not best.recommendations:
+            destination_desc = (
+                f"destination {_describe_source(request.destination)}" if request.destination else "no destination"
+            )
             raise RuntimeError(
                 "No engine can handle this request. "
                 "No available engine supports the required capabilities: "
-                f"source format {request.source.format.value}, "
-                f"{'destination format ' + request.destination.format.value if request.destination else 'no destination'}."
+                f"source {_describe_source(request.source)}, {destination_desc}."
             )
         return best
 

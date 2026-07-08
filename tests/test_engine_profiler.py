@@ -15,6 +15,8 @@ from profilers.engine_profiler import (
     _datafusion_size_rule,
     _format_rule,
     _operation_rule,
+    _polars_row_count_rule,
+    _polars_size_rule,
     _required_engine_rule,
     _row_count_rule,
     _size_bytes_rule,
@@ -83,6 +85,30 @@ class TestDataFusionSizeRule:
 
     def test_no_size_returns_none(self):
         assert _datafusion_size_rule(_req()) is None
+
+
+class TestPolarsSizeRule:
+    def test_small_dataset_votes_polars(self):
+        engine, _, _ = _polars_size_rule(_req(size_bytes=200 * _MB))
+        assert engine == EngineType.POLARS
+
+    def test_large_dataset_returns_none(self):
+        assert _polars_size_rule(_req(size_bytes=20 * _GB)) is None
+
+    def test_no_size_returns_none(self):
+        assert _polars_size_rule(_req()) is None
+
+
+class TestPolarsRowCountRule:
+    def test_small_row_count_votes_polars(self):
+        engine, _, _ = _polars_row_count_rule(_req(row_count=50_000))
+        assert engine == EngineType.POLARS
+
+    def test_huge_row_count_returns_none(self):
+        assert _polars_row_count_rule(_req(row_count=200_000_000)) is None
+
+    def test_no_row_count_returns_none(self):
+        assert _polars_row_count_rule(_req()) is None
 
 
 class TestRowCountRule:
@@ -173,6 +199,11 @@ class TestRuleBasedEngineProfiler:
         req = _req(size_bytes=800 * _MB, fmt=FileFormat.PARQUET, row_count=4_000_000)
         result = self.profiler.profile(req)
         assert result.best.engine == EngineType.DATAFUSION
+
+    def test_midsize_unrecognized_format_recommends_polars(self):
+        req = _req(size_bytes=2 * _GB, fmt=FileFormat.ICEBERG)
+        result = self.profiler.profile(req)
+        assert result.best.engine == EngineType.POLARS
 
     def test_recommendations_sorted_descending(self):
         req = _req(size_bytes=100 * _MB, fmt=FileFormat.CSV, row_count=500_000)
