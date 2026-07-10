@@ -20,6 +20,8 @@ _LARGE_DATASET_BYTES = 10 * _GB
 _MEDIUM_DATASET_BYTES = 1 * _GB
 _LARGE_ROW_COUNT = 100_000_000
 _POLARS_MAX_BYTES = 4 * _GB
+_DASK_MIN_BYTES = _POLARS_MAX_BYTES
+_DASK_MIN_ROWS = 20_000_000
 
 
 def _required_engine_rule(req: PipelineRequest) -> Vote | None:
@@ -84,6 +86,29 @@ def _polars_row_count_rule(req: PipelineRequest) -> Vote | None:
     return None
 
 
+def _dask_size_rule(req: PipelineRequest) -> Vote | None:
+    size = req.source.size_bytes
+    if size is None:
+        return None
+    if _DASK_MIN_BYTES < size < _LARGE_DATASET_BYTES:
+        return (
+            EngineType.DASK,
+            0.5,
+            f"dataset size {size / _GB:.2f} GB exceeds comfortable single-node memory "
+            "but doesn't yet need a full Spark cluster",
+        )
+    return None
+
+
+def _dask_row_count_rule(req: PipelineRequest) -> Vote | None:
+    rows = req.source.row_count
+    if rows is None:
+        return None
+    if _DASK_MIN_ROWS <= rows < _LARGE_ROW_COUNT:
+        return EngineType.DASK, 0.35, f"{rows:,} rows benefits from Dask's lightweight distributed scheduler"
+    return None
+
+
 def _format_rule(req: PipelineRequest) -> Vote | None:
     src = req.source.source
     if not isinstance(src, FileSource):
@@ -113,9 +138,11 @@ DEFAULT_RULES: list[Rule] = [
     _size_bytes_rule,
     _datafusion_size_rule,
     _polars_size_rule,
+    _dask_size_rule,
     _row_count_rule,
     _datafusion_row_count_rule,
     _polars_row_count_rule,
+    _dask_row_count_rule,
     _format_rule,
     _operation_rule,
 ]

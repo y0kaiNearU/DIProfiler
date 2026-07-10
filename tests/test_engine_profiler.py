@@ -11,6 +11,8 @@ from models.models import (
 from profilers.engine_profiler import (
     DEFAULT_RULES,
     RuleBasedEngineProfiler,
+    _dask_row_count_rule,
+    _dask_size_rule,
     _datafusion_row_count_rule,
     _datafusion_size_rule,
     _format_rule,
@@ -111,6 +113,36 @@ class TestPolarsRowCountRule:
         assert _polars_row_count_rule(_req()) is None
 
 
+class TestDaskSizeRule:
+    def test_midrange_dataset_votes_dask(self):
+        engine, _, _ = _dask_size_rule(_req(size_bytes=6 * _GB))
+        assert engine == EngineType.DASK
+
+    def test_small_dataset_returns_none(self):
+        assert _dask_size_rule(_req(size_bytes=200 * _MB)) is None
+
+    def test_huge_dataset_returns_none(self):
+        assert _dask_size_rule(_req(size_bytes=20 * _GB)) is None
+
+    def test_no_size_returns_none(self):
+        assert _dask_size_rule(_req()) is None
+
+
+class TestDaskRowCountRule:
+    def test_midrange_row_count_votes_dask(self):
+        engine, _, _ = _dask_row_count_rule(_req(row_count=50_000_000))
+        assert engine == EngineType.DASK
+
+    def test_small_row_count_returns_none(self):
+        assert _dask_row_count_rule(_req(row_count=1_000_000)) is None
+
+    def test_huge_row_count_returns_none(self):
+        assert _dask_row_count_rule(_req(row_count=200_000_000)) is None
+
+    def test_no_row_count_returns_none(self):
+        assert _dask_row_count_rule(_req()) is None
+
+
 class TestRowCountRule:
     def test_huge_row_count_votes_spark(self):
         engine, _, _ = _row_count_rule(_req(row_count=200_000_000))
@@ -204,6 +236,11 @@ class TestRuleBasedEngineProfiler:
         req = _req(size_bytes=2 * _GB, fmt=FileFormat.ICEBERG)
         result = self.profiler.profile(req)
         assert result.best.engine == EngineType.POLARS
+
+    def test_larger_unrecognized_format_recommends_dask(self):
+        req = _req(size_bytes=6 * _GB, fmt=FileFormat.ICEBERG)
+        result = self.profiler.profile(req)
+        assert result.best.engine == EngineType.DASK
 
     def test_recommendations_sorted_descending(self):
         req = _req(size_bytes=100 * _MB, fmt=FileFormat.CSV, row_count=500_000)

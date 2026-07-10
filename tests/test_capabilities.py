@@ -128,6 +128,15 @@ class TestBuildDefaultCapabilities:
     def test_polars_does_not_read_postgresql(self):
         assert not self.caps.can_handle(EngineType.POLARS, [SupportsDataSource("postgresql", "read")])
 
+    def test_dask_reads_parquet(self):
+        assert self.caps.can_handle(EngineType.DASK, [SupportsFormat(FileFormat.PARQUET, "read")])
+
+    def test_dask_does_not_read_orc(self):
+        assert not self.caps.can_handle(EngineType.DASK, [SupportsFormat(FileFormat.ORC, "read")])
+
+    def test_dask_does_not_read_postgresql(self):
+        assert not self.caps.can_handle(EngineType.DASK, [SupportsDataSource("postgresql", "read")])
+
 
 class TestBuildRequiredCapabilities:
     def _file_req(self, fmt, dst_fmt=None):
