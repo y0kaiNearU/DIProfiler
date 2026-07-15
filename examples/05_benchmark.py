@@ -9,6 +9,8 @@ Engines tested:
   - pandas       always (baseline)
   - duckdb       if installed  (uv add duckdb)
   - datafusion   if installed  (uv add datafusion pyarrow)
+  - polars       if installed  (uv add polars)
+  - dask         if installed  (uv add "dask[dataframe,distributed]")
   - spark        if installed manually — NOT a project dependency, install separately:
                    uv pip install "pyspark==3.5.5"   # requires Java 8+
                  Runs in local[*] mode (single machine, not a cluster).
@@ -65,6 +67,16 @@ if importlib.util.find_spec("duckdb"):
 if importlib.util.find_spec("datafusion") and importlib.util.find_spec("pyarrow"):
     import datafusion
     _available_engine_types.append(EngineType.DATAFUSION)
+
+if importlib.util.find_spec("polars"):
+    import polars
+    _available_engine_types.append(EngineType.POLARS)
+
+if importlib.util.find_spec("dask"):
+    import dask.dataframe as dask_dataframe
+    from distributed import Client as DaskClient
+    _dask_client = DaskClient(processes=False)
+    _available_engine_types.append(EngineType.DASK)
 
 _spark = None
 if importlib.util.find_spec("pyspark"):
@@ -210,6 +222,25 @@ def _run_datafusion(path: str) -> float:
     return time.perf_counter() - t0
 
 
+def _run_polars(path: str) -> float:
+    t0 = time.perf_counter()
+    (
+        polars.scan_csv(path)
+        .group_by("category")
+        .agg(n=polars.len(), total=polars.col("value_a").sum())
+        .sort("category")
+        .collect()
+    )
+    return time.perf_counter() - t0
+
+
+def _run_dask(path: str) -> float:
+    t0 = time.perf_counter()
+    ddf = dask_dataframe.read_csv(path)
+    ddf.groupby("category").agg(n=("value_a", "count"), total=("value_a", "sum")).compute()
+    return time.perf_counter() - t0
+
+
 def _run_spark(path: str) -> float:
     t0 = time.perf_counter()
     df = _spark.read.csv(path, header=True, inferSchema=True)
@@ -223,6 +254,10 @@ if EngineType.DUCKDB in _available_engine_types:
     _RUNNERS["duckdb"] = _run_duckdb
 if EngineType.DATAFUSION in _available_engine_types:
     _RUNNERS["datafusion"] = _run_datafusion
+if EngineType.POLARS in _available_engine_types:
+    _RUNNERS["polars"] = _run_polars
+if EngineType.DASK in _available_engine_types:
+    _RUNNERS["dask"] = _run_dask
 if EngineType.SPARK in _available_engine_types:
     _RUNNERS["spark"] = _run_spark
 
@@ -287,9 +322,12 @@ with tempfile.TemporaryDirectory() as tmpdir:
 if _spark is not None:
     _spark.stop()
 
-_ENGINE_COLORS  = {"pandas": "#aaaaaa", "duckdb": "#f5a623", "datafusion": "#4a90d9", "spark": "#e84040"}
-_ENGINE_MARKERS = {"pandas": "^",       "duckdb": "o",       "datafusion": "s",       "spark": "D"}
-_ENGINE_LABELS  = {"pandas": "pandas (baseline)", "duckdb": "DuckDB", "datafusion": "DataFusion", "spark": "Spark (local[*])"}
+if EngineType.DASK in _available_engine_types:
+    _dask_client.close()
+
+_ENGINE_COLORS  = {"pandas": "#aaaaaa", "duckdb": "#f5a623", "datafusion": "#4a90d9", "polars": "#7b4fd6", "dask": "#38a169", "spark": "#e84040"}
+_ENGINE_MARKERS = {"pandas": "^",       "duckdb": "o",       "datafusion": "s",       "polars": "v",       "dask": "P",       "spark": "D"}
+_ENGINE_LABELS  = {"pandas": "pandas (baseline)", "duckdb": "DuckDB", "datafusion": "DataFusion", "polars": "Polars", "dask": "Dask", "spark": "Spark (local[*])"}
 
 # Marker shape per profiler recommendation
 _PROFILER_STYLE = {

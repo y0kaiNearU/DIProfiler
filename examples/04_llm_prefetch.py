@@ -4,6 +4,8 @@ import sys
 import tempfile
 from pathlib import Path
 
+import matplotlib.pyplot as plt
+
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from models.models import (
@@ -106,6 +108,33 @@ for rec in result.recommendations:
     marker = " <-- recommended" if rec == result.best else ""
     print(f"  {rec.engine.value:<12} confidence={rec.confidence:.3f}{marker}")
     print(f"               {rec.reasoning}")
+
+# ---------------------------------------------------------------------------
+# Visualisation
+# ---------------------------------------------------------------------------
+
+_ENGINE_COLORS = {"duckdb": "#f5a623", "datafusion": "#4a90d9", "spark": "#e84040"}
+
+engines = [rec.engine.value for rec in result.recommendations]
+confs   = [rec.confidence   for rec in result.recommendations]
+colors  = [_ENGINE_COLORS.get(e, "#aaaaaa") for e in engines]
+
+fig, ax = plt.subplots(figsize=(7, 3))
+bars = ax.barh(engines, confs, color=colors, edgecolor="white", height=0.5)
+ax.set_xlim(0, 1.1)
+ax.set_xlabel("Confidence", fontsize=11)
+ax.set_title("Prefetch + LLM profiler — engine recommendation", fontsize=11, fontweight="bold")
+ax.axvline(0.5, color="gray", linestyle="--", linewidth=0.8, alpha=0.5)
+for bar, conf in zip(bars, confs):
+    ax.text(conf + 0.02, bar.get_y() + bar.get_height() / 2,
+            f"{conf:.3f}", va="center", fontsize=10)
+ax.grid(True, axis="x", alpha=0.3)
+
+plt.tight_layout()
+out = Path(__file__).parent / "04_llm_prefetch_result.png"
+plt.savefig(out, dpi=150, bbox_inches="tight")
+print(f"\nChart saved -> {out}")
+plt.show()
 
 # ---------------------------------------------------------------------------
 # Cleanup
