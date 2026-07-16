@@ -33,7 +33,7 @@ class PrefetchingProfiler(Profiler):
 
     def _get_delegate(self) -> Profiler:
         if self._delegate is None:
-            from profilers.engine_profiler import RuleBasedEngineProfiler
+            from profilers.rule_based_engine_profiler import RuleBasedEngineProfiler
             self._delegate = RuleBasedEngineProfiler()
         return self._delegate
 

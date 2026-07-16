@@ -8,7 +8,7 @@ from models.models import (
     OperationType,
     PipelineRequest,
 )
-from profilers.engine_profiler import (
+from profilers.rule_based_engine_profiler import (
     DEFAULT_RULES,
     RuleBasedEngineProfiler,
     _dask_row_count_rule,

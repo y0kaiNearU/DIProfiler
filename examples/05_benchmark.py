@@ -47,7 +47,7 @@ from models.models import (
     OperationType,
     PipelineRequest,
 )
-from profilers.engine_profiler import RuleBasedEngineProfiler
+from profilers.rule_based_engine_profiler import RuleBasedEngineProfiler
 from profilers.features import extract
 from profilers.ml_engine_profiler import MLEngineProfiler
 from profilers.prefetching_profiler import PrefetchingProfiler

@@ -21,7 +21,7 @@ from engines.polars.writer import PolarsWriter
 from engines.spark.loader import SparkLoader
 from engines.spark.writer import SparkWriter
 from models.models import DatabaseSource, DatasetInfo, EngineType, FileSource, PipelineRequest, ProfilingResult
-from profilers.engine_profiler import RuleBasedEngineProfiler
+from profilers.rule_based_engine_profiler import RuleBasedEngineProfiler
 
 _ENGINE_MODULES: dict[EngineType, str] = {
     EngineType.DUCKDB: "duckdb",

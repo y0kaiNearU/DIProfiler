@@ -13,7 +13,7 @@ from models.models import (
     OperationType,
     PipelineRequest,
 )
-from profilers.engine_profiler import DEFAULT_RULES, RuleBasedEngineProfiler
+from profilers.rule_based_engine_profiler import DEFAULT_RULES, RuleBasedEngineProfiler
 
 _MB = 1024 ** 2
 _GB = 1024 ** 3
