@@ -11,7 +11,7 @@ from models.models import (
     FileSource,
     PipelineRequest,
 )
-from profilers.ml_engine_profiler import MLEngineProfiler
+from profilers.engine.ml_engine_profiler import MLEngineProfiler
 
 
 class _MockModel:

@@ -47,10 +47,10 @@ from models.models import (
     OperationType,
     PipelineRequest,
 )
-from profilers.rule_based_engine_profiler import RuleBasedEngineProfiler
-from profilers.features import extract
-from profilers.ml_engine_profiler import MLEngineProfiler
-from profilers.prefetching_profiler import PrefetchingProfiler
+from profilers.engine.rule_based_engine_profiler import RuleBasedEngineProfiler
+from profilers.common.features import extract
+from profilers.engine.ml_engine_profiler import MLEngineProfiler
+from profilers.prefetching.prefetching_profiler import PrefetchingProfiler
 
 logging.getLogger("pyspark").setLevel(logging.ERROR)
 logging.getLogger("py4j").setLevel(logging.ERROR)
@@ -156,7 +156,7 @@ _prefetch_profiler = PrefetchingProfiler(
 # 4. LLM — optional, requires anthropic package
 _llm_profiler = None
 if importlib.util.find_spec("anthropic"):
-    from profilers.llm_engine_profiler import LLMEngineProfiler
+    from profilers.engine.llm_engine_profiler import LLMEngineProfiler
     _llm_profiler = LLMEngineProfiler()
     print("LLM profiler enabled (ANTHROPIC_API_KEY must be set)\n")
 else:

@@ -11,7 +11,7 @@ from models.models import (
     OperationType,
     PipelineRequest,
 )
-from profilers.features import FEATURE_NAMES, extract
+from profilers.common.features import FEATURE_NAMES, extract
 
 
 def _req(

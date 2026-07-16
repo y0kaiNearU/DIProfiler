@@ -17,9 +17,9 @@ from models.models import (
     OperationType,
     PipelineRequest,
 )
-from profilers.rule_based_engine_profiler import RuleBasedEngineProfiler
-from profilers.features import extract
-from profilers.ml_engine_profiler import MLEngineProfiler
+from profilers.engine.rule_based_engine_profiler import RuleBasedEngineProfiler
+from profilers.common.features import extract
+from profilers.engine.ml_engine_profiler import MLEngineProfiler
 
 _MB = 1024 ** 2
 _GB = 1024 ** 3

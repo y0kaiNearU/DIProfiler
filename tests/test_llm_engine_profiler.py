@@ -12,7 +12,7 @@ from models.models import (
     OperationType,
     PipelineRequest,
 )
-from profilers.llm_engine_profiler import LLMEngineProfiler, _format_request
+from profilers.engine.llm_engine_profiler import LLMEngineProfiler, _format_request
 
 
 def _req(

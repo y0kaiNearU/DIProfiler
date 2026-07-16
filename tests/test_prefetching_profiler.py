@@ -10,7 +10,7 @@ from models.models import (
     PipelineRequest,
     ProfilingResult,
 )
-from profilers.prefetching_profiler import PrefetchingProfiler
+from profilers.prefetching.prefetching_profiler import PrefetchingProfiler
 
 
 def _make_source(size_bytes=None, row_count=None):
@@ -114,7 +114,7 @@ def test_profile_returns_delegate_result():
 
 
 def test_default_delegate_is_rule_based():
-    from profilers.rule_based_engine_profiler import RuleBasedEngineProfiler
+    from profilers.engine.rule_based_engine_profiler import RuleBasedEngineProfiler
 
     profiler = PrefetchingProfiler(prefetch_fn=lambda r: _enriched_info(size_bytes=100 * 1024 ** 2))
     result = profiler.profile(_req())

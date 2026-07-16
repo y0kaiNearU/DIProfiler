@@ -16,8 +16,8 @@ from models.models import (
     OperationType,
     PipelineRequest,
 )
-from profilers.llm_engine_profiler import LLMEngineProfiler
-from profilers.prefetching_profiler import PrefetchingProfiler
+from profilers.engine.llm_engine_profiler import LLMEngineProfiler
+from profilers.prefetching.prefetching_profiler import PrefetchingProfiler
 
 
 # ---------------------------------------------------------------------------

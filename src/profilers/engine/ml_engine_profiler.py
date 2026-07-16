@@ -6,7 +6,7 @@ import numpy as np
 
 from core.profiler import Profiler
 from models.models import EngineRecommendation, EngineType, PipelineRequest, ProfilingResult
-from profilers.features import extract
+from profilers.common.features import extract
 
 
 class MLEngineProfiler(Profiler):
