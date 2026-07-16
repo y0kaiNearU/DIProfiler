@@ -1,100 +1,27 @@
 from __future__ import annotations
 
-from core.capabilities import (
-    CapabilityRegistry,
-    SupportsDataSource,
-    SupportsFormat,
-)
-from models.models import EngineType, FileFormat, PipelineRequest, DatabaseSource, FileSource
+from core.capabilities import CapabilityRegistry, SupportsDataSource, SupportsFormat
+from engines.dask import CAPABILITIES as DASK_CAPABILITIES
+from engines.datafusion import CAPABILITIES as DATAFUSION_CAPABILITIES
+from engines.duckdb import CAPABILITIES as DUCKDB_CAPABILITIES
+from engines.polars import CAPABILITIES as POLARS_CAPABILITIES
+from engines.spark import CAPABILITIES as SPARK_CAPABILITIES
+from models.models import EngineType, PipelineRequest, DatabaseSource, FileSource
+
+_ENGINE_CAPABILITIES = {
+    EngineType.DUCKDB: DUCKDB_CAPABILITIES,
+    EngineType.DATAFUSION: DATAFUSION_CAPABILITIES,
+    EngineType.SPARK: SPARK_CAPABILITIES,
+    EngineType.POLARS: POLARS_CAPABILITIES,
+    EngineType.DASK: DASK_CAPABILITIES,
+}
 
 
 def build_default_capabilities() -> CapabilityRegistry:
-    """Build default capability registry for DuckDB and Spark."""
+    """Build default capability registry from each engine's declared capabilities."""
     registry = CapabilityRegistry()
-
-    # DuckDB capabilities
-    registry.register(
-        EngineType.DUCKDB,
-        SupportsFormat(FileFormat.CSV, "read"),
-        SupportsFormat(FileFormat.PARQUET, "read"),
-        SupportsFormat(FileFormat.JSON, "read"),
-        SupportsFormat(FileFormat.CSV, "write"),
-        SupportsFormat(FileFormat.PARQUET, "write"),
-        SupportsFormat(FileFormat.JSON, "write"),
-        SupportsDataSource("filesystem", "read"),
-        SupportsDataSource("filesystem", "write"),
-        SupportsDataSource("postgresql", "read"),
-        SupportsDataSource("postgresql", "write"),
-        SupportsDataSource("mysql", "read"),
-        SupportsDataSource("mysql", "write"),
-        SupportsDataSource("sqlite", "read"),
-        SupportsDataSource("sqlite", "write"),
-    )
-
-    # DataFusion capabilities
-    registry.register(
-        EngineType.DATAFUSION,
-        SupportsFormat(FileFormat.CSV, "read"),
-        SupportsFormat(FileFormat.PARQUET, "read"),
-        SupportsFormat(FileFormat.JSON, "read"),
-        SupportsFormat(FileFormat.CSV, "write"),
-        SupportsFormat(FileFormat.PARQUET, "write"),
-        SupportsFormat(FileFormat.JSON, "write"),
-        SupportsDataSource("filesystem", "read"),
-        SupportsDataSource("filesystem", "write"),
-    )
-
-    # Spark capabilities
-    registry.register(
-        EngineType.SPARK,
-        SupportsFormat(FileFormat.CSV, "read"),
-        SupportsFormat(FileFormat.PARQUET, "read"),
-        SupportsFormat(FileFormat.JSON, "read"),
-        SupportsFormat(FileFormat.ORC, "read"),
-        SupportsFormat(FileFormat.DELTA, "read"),
-        SupportsFormat(FileFormat.ICEBERG, "read"),
-        SupportsFormat(FileFormat.CSV, "write"),
-        SupportsFormat(FileFormat.PARQUET, "write"),
-        SupportsFormat(FileFormat.JSON, "write"),
-        SupportsFormat(FileFormat.ORC, "write"),
-        SupportsFormat(FileFormat.DELTA, "write"),
-        SupportsFormat(FileFormat.ICEBERG, "write"),
-        SupportsDataSource("filesystem", "read"),
-        SupportsDataSource("filesystem", "write"),
-        SupportsDataSource("postgresql", "read"),
-        SupportsDataSource("postgresql", "write"),
-        SupportsDataSource("mysql", "read"),
-        SupportsDataSource("mysql", "write"),
-        SupportsDataSource("oracle", "read"),
-        SupportsDataSource("oracle", "write"),
-    )
-
-    # Polars capabilities
-    registry.register(
-        EngineType.POLARS,
-        SupportsFormat(FileFormat.CSV, "read"),
-        SupportsFormat(FileFormat.PARQUET, "read"),
-        SupportsFormat(FileFormat.JSON, "read"),
-        SupportsFormat(FileFormat.CSV, "write"),
-        SupportsFormat(FileFormat.PARQUET, "write"),
-        SupportsFormat(FileFormat.JSON, "write"),
-        SupportsDataSource("filesystem", "read"),
-        SupportsDataSource("filesystem", "write"),
-    )
-
-    # Dask capabilities
-    registry.register(
-        EngineType.DASK,
-        SupportsFormat(FileFormat.CSV, "read"),
-        SupportsFormat(FileFormat.PARQUET, "read"),
-        SupportsFormat(FileFormat.JSON, "read"),
-        SupportsFormat(FileFormat.CSV, "write"),
-        SupportsFormat(FileFormat.PARQUET, "write"),
-        SupportsFormat(FileFormat.JSON, "write"),
-        SupportsDataSource("filesystem", "read"),
-        SupportsDataSource("filesystem", "write"),
-    )
-
+    for engine, capabilities in _ENGINE_CAPABILITIES.items():
+        registry.register(engine, *capabilities)
     return registry
 
 
