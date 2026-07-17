@@ -91,7 +91,7 @@ def _format_request(request: PipelineRequest) -> str:
     return "\n".join(lines)
 
 
-class LLMEngineProfiler(Profiler):
+class LLMEngineProfiler(Profiler[EngineRecommendation]):
     """
     Engine profiler backed by Claude (Anthropic API).
 

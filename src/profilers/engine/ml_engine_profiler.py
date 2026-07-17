@@ -8,7 +8,7 @@ from profilers.common.features import extract
 from profilers.common.ml_scoring import score_with_model
 
 
-class MLEngineProfiler(Profiler):
+class MLEngineProfiler(Profiler[EngineRecommendation]):
     """
     Engine profiler backed by a scikit-learn classifier.
 

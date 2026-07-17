@@ -21,6 +21,7 @@ from engines.polars.writer import PolarsWriter
 from engines.spark.loader import SparkLoader
 from engines.spark.writer import SparkWriter
 from models.models import DatabaseSource, DatasetInfo, EngineType, FileSource, PipelineRequest, ProfilingResult
+from profilers.common.composite import EnsembleProfiler
 from profilers.engine.rule_based_engine_profiler import RuleBasedEngineProfiler
 
 _ENGINE_MODULES: dict[EngineType, str] = {
@@ -113,31 +114,21 @@ class DIProfiler:
     def recommend(self, request: PipelineRequest) -> ProfilingResult:
         """Run all profilers and return engine recommendations, filtered by capabilities."""
         stamped = dataclasses.replace(request, available_engines=self._available_engines)
-        results = self._profiler_registry.run(stamped)
-        if not results:
-            raise RuntimeError("No profiler could handle this request.")
-
-        # Build required capabilities from request
         required_caps = build_required_capabilities(request)
 
-        # Filter recommendations to only engines that satisfy required capabilities
-        for result in results:
-            viable_recs = [
-                rec for rec in result.recommendations
-                if self._capabilities.can_handle(rec.engine, required_caps)
-            ]
-            result.recommendations = viable_recs
+        ensemble = EnsembleProfiler(
+            self._profiler_registry.profilers,
+            key_fn=lambda rec: rec.engine,
+            mode="max",
+            filter_fn=lambda rec: self._capabilities.can_handle(rec.engine, required_caps),
+        )
 
-        # Merge recommendations from all profilers
-        merged = {}
-        for result in results:
-            for rec in result.recommendations:
-                if rec.engine not in merged or rec.confidence > merged[rec.engine].confidence:
-                    merged[rec.engine] = rec
-        best = results[0]
-        best.recommendations = sorted(merged.values(), key=lambda r: r.confidence, reverse=True)
+        if not ensemble.can_handle(stamped):
+            raise RuntimeError("No profiler could handle this request.")
 
-        if not best.recommendations:
+        result = ensemble.profile(stamped)
+
+        if not result.recommendations:
             destination_desc = (
                 f"destination {_describe_source(request.destination)}" if request.destination else "no destination"
             )
@@ -146,5 +137,5 @@ class DIProfiler:
                 "No available engine supports the required capabilities: "
                 f"source {_describe_source(request.source)}, {destination_desc}."
             )
-        return best
+        return result
 

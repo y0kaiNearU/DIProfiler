@@ -146,7 +146,7 @@ DEFAULT_RULES: list[Rule] = [
 ]
 
 
-class RuleBasedEngineProfiler(Profiler):
+class RuleBasedEngineProfiler(Profiler[EngineRecommendation]):
 
     def __init__(self, rules: list[Rule] | None = None) -> None:
         self._rules = rules if rules is not None else list(DEFAULT_RULES)

@@ -26,6 +26,10 @@ class ProfilerRegistry:
     def names(self) -> list[str]:
         return list(self._profilers)
 
+    @property
+    def profilers(self) -> list[Profiler]:
+        return list(self._profilers.values())
+
     def run(self, request: PipelineRequest) -> list[ProfilingResult]:
         return [p.profile(request) for p in self._profilers.values() if p.can_handle(request)]
 

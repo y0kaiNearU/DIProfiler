@@ -4,10 +4,10 @@ import dataclasses
 from typing import Callable
 
 from core.profiler import Profiler
-from models.models import DatasetInfo, PipelineRequest, ProfilingResult
+from models.models import DatasetInfo, PipelineRequest, ProfilingResult, Recommendation
 
 
-class PrefetchingProfiler(Profiler):
+class PrefetchingProfiler[R: Recommendation](Profiler[R]):
     """
     Profiler wrapper that enriches a PipelineRequest with real dataset metadata
     before delegating to an inner profiler.
@@ -26,12 +26,12 @@ class PrefetchingProfiler(Profiler):
     def __init__(
         self,
         prefetch_fn: Callable[[PipelineRequest], DatasetInfo],
-        delegate: Profiler | None = None,
+        delegate: Profiler[R] | None = None,
     ) -> None:
         self._prefetch_fn = prefetch_fn
         self._delegate = delegate
 
-    def _get_delegate(self) -> Profiler:
+    def _get_delegate(self) -> Profiler[R]:
         if self._delegate is None:
             from profilers.engine.rule_based_engine_profiler import RuleBasedEngineProfiler
             self._delegate = RuleBasedEngineProfiler()
@@ -45,7 +45,7 @@ class PrefetchingProfiler(Profiler):
         src = request.source
         return src.size_bytes is None or src.row_count is None
 
-    def profile(self, request: PipelineRequest) -> ProfilingResult:
+    def profile(self, request: PipelineRequest) -> ProfilingResult[R]:
         enriched_info = self._prefetch_fn(request)
         enriched_request = dataclasses.replace(request, source=enriched_info)
         return self._get_delegate().profile(enriched_request)

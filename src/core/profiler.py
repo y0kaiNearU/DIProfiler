@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 
-from models.models import PipelineRequest, ProfilingResult
+from models.models import PipelineRequest, ProfilingResult, Recommendation
 
 
-class Profiler(ABC):
-    """Base interface every profiler must implement."""
+class Profiler[R: Recommendation](ABC):
+    """Base interface every profiler must implement, generic over its recommendation type."""
 
     @property
     @abstractmethod
@@ -16,5 +16,5 @@ class Profiler(ABC):
         """Return True if this profiler is applicable to the given request."""
 
     @abstractmethod
-    def profile(self, request: PipelineRequest) -> ProfilingResult:
+    def profile(self, request: PipelineRequest) -> ProfilingResult[R]:
         """Analyze the request and return a ProfilingResult with recommendations."""

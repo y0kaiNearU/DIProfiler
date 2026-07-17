@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional, Union
+from typing import Optional, Protocol, Union, runtime_checkable
 
 
 class FileFormat(Enum):
@@ -77,6 +77,14 @@ class PipelineRequest:
     operations: list[OperationType] = field(default_factory=list)
 
 
+@runtime_checkable
+class Recommendation(Protocol):
+    """Structural contract every profiler recommendation must satisfy."""
+
+    confidence: float
+    reasoning: str
+
+
 @dataclass
 class EngineRecommendation:
     engine: EngineType
@@ -85,12 +93,19 @@ class EngineRecommendation:
 
 
 @dataclass
-class ProfilingResult:
+class PartitionRecommendation:
+    column: str
+    confidence: float
+    reasoning: str
+
+
+@dataclass
+class ProfilingResult[R: Recommendation]:
     request: PipelineRequest
-    recommendations: list[EngineRecommendation] = field(default_factory=list)
+    recommendations: list[R] = field(default_factory=list)
 
     @property
-    def best(self) -> Optional[EngineRecommendation]:
+    def best(self) -> Optional[R]:
         if not self.recommendations:
             return None
         return max(self.recommendations, key=lambda r: r.confidence)
