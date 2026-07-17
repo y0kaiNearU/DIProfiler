@@ -1,6 +1,3 @@
-from dataclasses import dataclass
-from typing import Callable
-
 from core.profiler import Profiler
 from models.models import (
     EngineRecommendation,
@@ -11,9 +8,10 @@ from models.models import (
     PipelineRequest,
     ProfilingResult,
 )
+from profilers.common.voting import Rule as _Rule, Vote as _Vote, aggregate_votes
 
-Vote = tuple[EngineType, float, str]
-Rule = Callable[[PipelineRequest], Vote | None]
+Vote = _Vote[EngineType]
+Rule = _Rule[EngineType]
 
 _GB = 1024 ** 3
 _LARGE_DATASET_BYTES = 10 * _GB
@@ -148,19 +146,6 @@ DEFAULT_RULES: list[Rule] = [
 ]
 
 
-@dataclass
-class _Tally:
-    total_weight: float = 0.0
-    reasons: list[str] = None
-
-    def __post_init__(self):
-        self.reasons = []
-
-    def add(self, weight: float, reason: str) -> None:
-        self.total_weight += weight
-        self.reasons.append(reason)
-
-
 class RuleBasedEngineProfiler(Profiler):
 
     def __init__(self, rules: list[Rule] | None = None) -> None:
@@ -174,27 +159,11 @@ class RuleBasedEngineProfiler(Profiler):
         return True
 
     def profile(self, request: PipelineRequest) -> ProfilingResult:
-        available = set(request.available_engines)
-        tallies: dict[EngineType, _Tally] = {e: _Tally() for e in available}
-
-        for rule in self._rules:
-            vote = rule(request)
-            if vote is not None:
-                engine, weight, reason = vote
-                if engine in available:
-                    tallies[engine].add(weight, reason)
-
-        total = sum(t.total_weight for t in tallies.values()) or 1.0
+        scored = aggregate_votes(request, self._rules, set(request.available_engines))
 
         recommendations = [
-            EngineRecommendation(
-                engine=engine,
-                confidence=round(tally.total_weight / total, 3),
-                reasoning="; ".join(tally.reasons) or "no applicable rules matched",
-            )
-            for engine, tally in tallies.items()
-            if tally.total_weight > 0
+            EngineRecommendation(engine=engine, confidence=confidence, reasoning=reasoning)
+            for engine, confidence, reasoning in scored
         ]
-        recommendations.sort(key=lambda r: r.confidence, reverse=True)
 
         return ProfilingResult(request=request, recommendations=recommendations)
