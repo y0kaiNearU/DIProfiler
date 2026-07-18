@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import narwhals as nw
 
-from core.writer import Writer
+from engine_selection.writer import Writer
 from engines.spark.base import SparkBase
 from engines.spark.database import writer as db_writer
 from engines.spark.file import writer as file_writer

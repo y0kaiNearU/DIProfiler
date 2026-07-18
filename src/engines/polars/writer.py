@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import narwhals as nw
 
-from core.writer import Writer
+from engine_selection.writer import Writer
 from engines.polars.file import writer as file_writer
 from models.models import EngineType, FileSource, PipelineRequest
 

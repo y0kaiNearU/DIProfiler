@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import narwhals as nw
 
-from core.loader import Loader
+from engine_selection.loader import Loader
 from engines.spark.base import SparkBase
 from engines.spark.database import loader as db_loader
 from engines.spark.file import loader as file_loader

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from core.capabilities import CapabilityRegistry, SupportsDataSource, SupportsFormat
+from engine_selection.capabilities import CapabilityRegistry, SupportsDataSource, SupportsFormat
 from engines.dask import CAPABILITIES as DASK_CAPABILITIES
 from engines.datafusion import CAPABILITIES as DATAFUSION_CAPABILITIES
 from engines.duckdb import CAPABILITIES as DUCKDB_CAPABILITIES

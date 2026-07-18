@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from core.capabilities import SupportsDataSource, SupportsFormat
+from engine_selection.capabilities import SupportsDataSource, SupportsFormat
 from models.models import FileFormat
 
 CAPABILITIES = [

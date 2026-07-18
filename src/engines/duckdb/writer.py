@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import narwhals as nw
 
-from core.writer import Writer
+from engine_selection.writer import Writer
 from engines.duckdb.base import DuckDBBase
 from engines.duckdb.database import writer as db_writer
 from engines.duckdb.file import writer as file_writer

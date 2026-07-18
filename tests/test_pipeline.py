@@ -1,6 +1,6 @@
 import pytest
 
-from core.pipeline import DIProfiler
+from engine_selection.pipeline import DIProfiler
 from models.models import (
     DatasetInfo,
     EngineRecommendation,

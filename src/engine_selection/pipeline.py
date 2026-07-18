@@ -4,12 +4,13 @@ import dataclasses
 import importlib.util
 from typing import Any, Callable
 
-from core.capability_config import build_default_capabilities, build_required_capabilities
-from core.capabilities import CapabilityRegistry
-from core.loader import Loader
 from core.profiler import Profiler
-from core.registry import LoaderRegistry, ProfilerRegistry, WriterRegistry
-from core.writer import Writer
+from core.registry import ProfilerRegistry
+from engine_selection.capability_config import build_default_capabilities, build_required_capabilities
+from engine_selection.capabilities import CapabilityRegistry
+from engine_selection.loader import Loader
+from engine_selection.registry import LoaderRegistry, WriterRegistry
+from engine_selection.writer import Writer
 from engines.dask.loader import DaskLoader
 from engines.dask.writer import DaskWriter
 from engines.datafusion.loader import DataFusionLoader
@@ -58,7 +59,7 @@ class DIProfiler:
         engine = result.recommendations[0].engine
 
         # Use FrameLoader/FrameWriter for I/O
-        from core.io import FrameLoader, FrameWriter
+        from engine_selection.io import FrameLoader, FrameWriter
         loader = FrameLoader(engine)
         frame = loader.load(request)
         frame = frame.filter(...)  # narwhals transforms

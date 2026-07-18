@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import narwhals as nw
 
-from core.loader import Loader
+from engine_selection.loader import Loader
 from engines.duckdb.base import DuckDBBase
 from engines.duckdb.database import loader as db_loader
 from engines.duckdb.file import loader as file_loader

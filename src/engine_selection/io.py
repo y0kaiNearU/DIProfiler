@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import narwhals as nw
 
-from core.loader import Loader
-from core.registry import LoaderRegistry, WriterRegistry
-from core.writer import Writer
+from engine_selection.loader import Loader
+from engine_selection.registry import LoaderRegistry, WriterRegistry
+from engine_selection.writer import Writer
 from engines.duckdb.loader import DuckDBLoader
 from engines.duckdb.writer import DuckDBWriter
 from engines.spark.loader import SparkLoader

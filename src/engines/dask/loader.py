@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import narwhals as nw
 
-from core.loader import Loader
+from engine_selection.loader import Loader
 from engines.dask.base import DaskBase
 from engines.dask.file import loader as file_loader
 from models.models import EngineType, FileSource, PipelineRequest
