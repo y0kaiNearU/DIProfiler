@@ -75,6 +75,8 @@ class PipelineRequest:
     available_engines: list["EngineType"] = field(default_factory=lambda: list(EngineType))
     destination: Optional[DatasetInfo] = None
     operations: list[OperationType] = field(default_factory=list)
+    available_cores: Optional[int] = None
+    available_memory_bytes: Optional[int] = None
 
 
 @runtime_checkable
@@ -95,6 +97,14 @@ class EngineRecommendation:
 @dataclass
 class PartitionRecommendation:
     column: str
+    confidence: float
+    reasoning: str
+
+
+@dataclass
+class ResourceRecommendation:
+    cores: int
+    memory_bytes: int
     confidence: float
     reasoning: str
 
