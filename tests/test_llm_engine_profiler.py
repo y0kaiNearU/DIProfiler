@@ -1,6 +1,3 @@
-import sys
-from unittest.mock import MagicMock, patch
-
 import pytest
 
 from models.models import (
@@ -45,18 +42,18 @@ def _req(
     )
 
 
-def _mock_client(recommendations: list[dict]):
-    """Build a fake anthropic client that returns the given recommendations."""
-    tool_block = MagicMock()
-    tool_block.type = "tool_use"
-    tool_block.input = {"recommendations": recommendations}
+class _StubLLMClient:
+    """A minimal LLMEngineClient for testing LLMEngineProfiler without any real provider."""
 
-    response = MagicMock()
-    response.content = [tool_block]
+    def __init__(self, recommendations):
+        self._recommendations = recommendations
+        self.last_prompt = None
+        self.last_engine_options = None
 
-    client = MagicMock()
-    client.messages.create.return_value = response
-    return client
+    def recommend(self, prompt, engine_options):
+        self.last_prompt = prompt
+        self.last_engine_options = engine_options
+        return self._recommendations
 
 
 def test_format_request_includes_file_path_and_format():
@@ -93,26 +90,28 @@ def test_format_request_database_source():
 
 
 def test_name():
-    assert LLMEngineProfiler().name == "llm_engine_profiler"
+    assert LLMEngineProfiler(_StubLLMClient([])).name == "llm_engine_profiler"
 
 
 def test_can_handle_always_true():
-    profiler = LLMEngineProfiler()
+    profiler = LLMEngineProfiler(_StubLLMClient([]))
     assert profiler.can_handle(_req())
 
 
-def test_client_initialized_lazily():
+def test_default_client_is_anthropic():
+    from profilers.engine.anthropic_llm_client import AnthropicLLMClient
+
     profiler = LLMEngineProfiler()
-    assert profiler._client is None
+    assert isinstance(profiler._get_client(), AnthropicLLMClient)
 
 
 def test_profile_returns_correct_recommendations():
-    profiler = LLMEngineProfiler()
-    profiler._client = _mock_client([
-        {"engine": "duckdb",    "confidence": 0.7, "reasoning": "small file"},
-        {"engine": "spark",     "confidence": 0.2, "reasoning": "overkill but available"},
-        {"engine": "datafusion","confidence": 0.1, "reasoning": "viable"},
+    client = _StubLLMClient([
+        {"engine": "duckdb", "confidence": 0.7, "reasoning": "small file"},
+        {"engine": "spark", "confidence": 0.2, "reasoning": "overkill but available"},
+        {"engine": "datafusion", "confidence": 0.1, "reasoning": "viable"},
     ])
+    profiler = LLMEngineProfiler(client)
 
     result = profiler.profile(_req())
     assert result.best.engine == EngineType.DUCKDB
@@ -120,12 +119,12 @@ def test_profile_returns_correct_recommendations():
 
 
 def test_profile_recommendations_sorted_descending():
-    profiler = LLMEngineProfiler()
-    profiler._client = _mock_client([
-        {"engine": "spark",      "confidence": 0.5, "reasoning": "r"},
-        {"engine": "duckdb",     "confidence": 0.3, "reasoning": "r"},
+    client = _StubLLMClient([
+        {"engine": "spark", "confidence": 0.5, "reasoning": "r"},
+        {"engine": "duckdb", "confidence": 0.3, "reasoning": "r"},
         {"engine": "datafusion", "confidence": 0.2, "reasoning": "r"},
     ])
+    profiler = LLMEngineProfiler(client)
 
     result = profiler.profile(_req())
     confidences = [r.confidence for r in result.recommendations]
@@ -133,11 +132,11 @@ def test_profile_recommendations_sorted_descending():
 
 
 def test_profile_filters_unavailable_engines():
-    profiler = LLMEngineProfiler()
-    profiler._client = _mock_client([
+    client = _StubLLMClient([
         {"engine": "duckdb", "confidence": 0.8, "reasoning": "r"},
-        {"engine": "spark",  "confidence": 0.2, "reasoning": "r"},
+        {"engine": "spark", "confidence": 0.2, "reasoning": "r"},
     ])
+    profiler = LLMEngineProfiler(client)
 
     req = _req(available_engines=[EngineType.DUCKDB])
     result = profiler.profile(req)
@@ -147,23 +146,20 @@ def test_profile_filters_unavailable_engines():
     assert EngineType.DUCKDB in engines
 
 
-def test_profile_passes_system_prompt_and_tool():
-    profiler = LLMEngineProfiler(model="claude-opus-4-8")
-    profiler._client = _mock_client([
-        {"engine": "duckdb", "confidence": 1.0, "reasoning": "r"},
-    ])
+def test_profile_passes_available_engines_to_client():
+    client = _StubLLMClient([{"engine": "duckdb", "confidence": 1.0, "reasoning": "r"}])
+    profiler = LLMEngineProfiler(client)
 
-    profiler.profile(_req())
+    profiler.profile(_req(available_engines=[EngineType.DUCKDB, EngineType.SPARK]))
 
-    call_kwargs = profiler._client.messages.create.call_args.kwargs
-    assert call_kwargs["model"] == "claude-opus-4-8"
-    assert call_kwargs["tool_choice"]["name"] == "recommend_engines"
-    assert any(t["name"] == "recommend_engines" for t in call_kwargs["tools"])
+    assert set(client.last_engine_options) == {"duckdb", "spark"}
 
 
-def test_import_error_when_anthropic_missing():
-    profiler = LLMEngineProfiler()
+def test_profile_passes_formatted_prompt_to_client():
+    client = _StubLLMClient([{"engine": "duckdb", "confidence": 1.0, "reasoning": "r"}])
+    profiler = LLMEngineProfiler(client)
 
-    with patch.dict(sys.modules, {"anthropic": None}):
-        with pytest.raises(ImportError, match="anthropic"):
-            profiler._get_client()
+    req = _req(fmt=FileFormat.PARQUET)
+    profiler.profile(req)
+
+    assert client.last_prompt == _format_request(req)
