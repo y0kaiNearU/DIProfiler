@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Protocol
 
 from core.profiler import Profiler
 from models.models import (
@@ -12,48 +12,14 @@ from models.models import (
     ProfilingResult,
 )
 
-_RECOMMEND_TOOL = {
-    "name": "recommend_engines",
-    "description": (
-        "Return a ranked list of engine recommendations for the described data pipeline. "
-        "Only include engines from the available_engines list. "
-        "Confidence values must sum to 1.0."
-    ),
-    "input_schema": {
-        "type": "object",
-        "properties": {
-            "recommendations": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "engine": {
-                            "type": "string",
-                            "enum": [e.value for e in EngineType],
-                        },
-                        "confidence": {
-                            "type": "number",
-                            "description": "0.0–1.0; all confidences must sum to 1.0",
-                        },
-                        "reasoning": {
-                            "type": "string",
-                            "description": "One-sentence justification.",
-                        },
-                    },
-                    "required": ["engine", "confidence", "reasoning"],
-                },
-            }
-        },
-        "required": ["recommendations"],
-    },
-}
 
-_SYSTEM_PROMPT = """\
-You are an expert data engineering advisor. Given a description of a data pipeline request,
-recommend which processing engine(s) are best suited, from the available options only.
-Consider: dataset size, row count, file format ecosystem (Arrow, Hadoop, etc.), operation
-complexity (joins, windows), and typical single-node vs. distributed tradeoffs.
-"""
+class LLMEngineClient(Protocol):
+    """Anything that can turn a formatted pipeline description into ranked engine recommendations."""
+
+    def recommend(self, prompt: str, engine_options: list[str]) -> list[dict[str, Any]]:
+        """Return a list of {"engine": str, "confidence": float, "reasoning": str} dicts,
+        each "engine" one of engine_options."""
+        ...
 
 
 def _format_request(request: PipelineRequest) -> str:
@@ -93,38 +59,26 @@ def _format_request(request: PipelineRequest) -> str:
 
 class LLMEngineProfiler(Profiler[EngineRecommendation]):
     """
-    Engine profiler backed by Claude (Anthropic API).
+    Engine profiler backed by an LLM client of your choice.
 
-    Formats the PipelineRequest as a structured prompt, asks Claude to rank the
-    available engines, and returns the response as a ProfilingResult.
-
-    Requires: uv add anthropic  (or pip install anthropic)
-    The ANTHROPIC_API_KEY environment variable must be set.
+    Formats the PipelineRequest as a structured prompt, asks the client to rank
+    the available engines, and returns the response as a ProfilingResult.
+    Defaults to Claude (Anthropic API) if no client is given; swap in any
+    LLMEngineClient implementation — a different provider, a stub for tests —
+    via the constructor.
 
     Args:
-        model:   Claude model ID. Defaults to claude-opus-4-8.
-        api_key: Overrides ANTHROPIC_API_KEY env var if provided.
+        client: An LLMEngineClient. Defaults to AnthropicLLMClient() if omitted
+                (requires `uv add anthropic` and ANTHROPIC_API_KEY set).
     """
 
-    def __init__(
-        self,
-        model: str = "claude-opus-4-8",
-        api_key: str | None = None,
-    ) -> None:
-        self._model = model
-        self._api_key = api_key
-        self._client: Any = None
+    def __init__(self, client: LLMEngineClient | None = None) -> None:
+        self._client = client
 
-    def _get_client(self) -> Any:
+    def _get_client(self) -> LLMEngineClient:
         if self._client is None:
-            try:
-                import anthropic
-            except ImportError as e:
-                raise ImportError(
-                    "LLMEngineProfiler requires the 'anthropic' package. "
-                    "Install it with: uv add anthropic"
-                ) from e
-            self._client = anthropic.Anthropic(api_key=self._api_key)
+            from profilers.engine.anthropic_llm_client import AnthropicLLMClient
+            self._client = AnthropicLLMClient()
         return self._client
 
     @property
@@ -134,20 +88,13 @@ class LLMEngineProfiler(Profiler[EngineRecommendation]):
     def can_handle(self, request: PipelineRequest) -> bool:
         return True
 
-    def profile(self, request: PipelineRequest) -> ProfilingResult:
+    def profile(self, request: PipelineRequest) -> ProfilingResult[EngineRecommendation]:
         client = self._get_client()
-
-        response = client.messages.create(
-            model=self._model,
-            max_tokens=2048,
-            system=_SYSTEM_PROMPT,
-            tools=[_RECOMMEND_TOOL],
-            tool_choice={"type": "tool", "name": "recommend_engines"},
-            messages=[{"role": "user", "content": _format_request(request)}],
-        )
-
-        tool_block = next(b for b in response.content if b.type == "tool_use")
+        prompt = _format_request(request)
         available = set(request.available_engines)
+        engine_options = [e.value for e in request.available_engines]
+
+        raw = client.recommend(prompt, engine_options)
 
         recommendations = [
             EngineRecommendation(
@@ -155,7 +102,7 @@ class LLMEngineProfiler(Profiler[EngineRecommendation]):
                 confidence=round(float(item["confidence"]), 3),
                 reasoning=item["reasoning"],
             )
-            for item in tool_block.input["recommendations"]
+            for item in raw
             if EngineType(item["engine"]) in available
         ]
         recommendations.sort(key=lambda r: r.confidence, reverse=True)
