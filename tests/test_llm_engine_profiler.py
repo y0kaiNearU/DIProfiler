@@ -99,7 +99,7 @@ def test_can_handle_always_true():
 
 
 def test_default_client_is_anthropic():
-    from profilers.engine.anthropic_llm_client import AnthropicLLMClient
+    from profilers.engine.llm_clients.anthropic_client import AnthropicLLMClient
 
     profiler = LLMEngineProfiler()
     assert isinstance(profiler._get_client(), AnthropicLLMClient)

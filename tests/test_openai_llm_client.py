@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from profilers.engine.openai_llm_client import OpenAILLMClient
+from profilers.engine.llm_clients.openai_client import OpenAILLMClient
 
 
 def _mock_client(recommendations: list[dict]):

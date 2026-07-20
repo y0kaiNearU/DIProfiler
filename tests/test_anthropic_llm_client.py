@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from profilers.engine.anthropic_llm_client import AnthropicLLMClient
+from profilers.engine.llm_clients.anthropic_client import AnthropicLLMClient
 
 
 def _mock_client(recommendations: list[dict]):

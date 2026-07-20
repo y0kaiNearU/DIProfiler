@@ -77,7 +77,7 @@ class LLMEngineProfiler(Profiler[EngineRecommendation]):
 
     def _get_client(self) -> LLMEngineClient:
         if self._client is None:
-            from profilers.engine.anthropic_llm_client import AnthropicLLMClient
+            from profilers.engine.llm_clients.anthropic_client import AnthropicLLMClient
             self._client = AnthropicLLMClient()
         return self._client
 
