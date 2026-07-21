@@ -12,11 +12,11 @@ def detect_available_resources() -> tuple[int, int | None]:
 def _detect_memory_bytes() -> int | None:
     try:
         import psutil
-        return psutil.virtual_memory().total
+        return int(psutil.virtual_memory().total)
     except ImportError:
         pass
 
     try:
-        return os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
+        return os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")  # type: ignore[attr-defined, no-any-return]
     except (AttributeError, ValueError, OSError):
         return None

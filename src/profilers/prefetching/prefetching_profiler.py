@@ -34,7 +34,9 @@ class PrefetchingProfiler[R: Recommendation](Profiler[R]):
     def _get_delegate(self) -> Profiler[R]:
         if self._delegate is None:
             from profilers.engine.rule_based_engine_profiler import RuleBasedEngineProfiler
-            self._delegate = RuleBasedEngineProfiler()
+            # Only type-sound when R = EngineRecommendation, which is the only default we offer.
+            self._delegate = RuleBasedEngineProfiler()  # type: ignore[assignment]
+        assert self._delegate is not None
         return self._delegate
 
     @property

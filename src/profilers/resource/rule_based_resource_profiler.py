@@ -55,6 +55,9 @@ class RuleBasedResourceProfiler(Profiler[ResourceRecommendation]):
         return request.available_cores is not None and request.available_memory_bytes is not None
 
     def profile(self, request: PipelineRequest) -> ProfilingResult[ResourceRecommendation]:
+        assert request.available_cores is not None and request.available_memory_bytes is not None, (
+            "profile() requires available_cores/available_memory_bytes; check can_handle() first"
+        )
         size_bytes = request.source.size_bytes
 
         cores, cores_reason = _recommend_cores(size_bytes, request.available_cores)

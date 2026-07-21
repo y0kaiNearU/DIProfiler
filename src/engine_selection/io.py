@@ -23,9 +23,10 @@ class FrameLoader:
 
     def load(self, request: PipelineRequest) -> nw.LazyFrame:
         """Load source dataset into a narwhals LazyFrame."""
-        loader = self._registry.get(self.engine)
-        if not loader.can_load(request):
-            raise NotImplementedError(f"{self.engine.value} loader does not support format {request.source.format.value}")
+        try:
+            loader = self._registry.resolve(self.engine, request)
+        except KeyError:
+            raise NotImplementedError(f"{self.engine.value} loader cannot handle this request's source.") from None
         return loader.load(request)
 
 
@@ -42,7 +43,8 @@ class FrameWriter:
         """Write a narwhals LazyFrame to the destination specified in request."""
         if request.destination is None:
             raise ValueError("PipelineRequest has no destination set.")
-        writer = self._registry.get(self.engine)
-        if not writer.can_write(request):
-            raise NotImplementedError(f"{self.engine.value} writer does not support format {request.destination.format.value}")
+        try:
+            writer = self._registry.resolve(self.engine, request)
+        except KeyError:
+            raise NotImplementedError(f"{self.engine.value} writer cannot handle this request's destination.") from None
         writer.write(frame, request)

@@ -79,6 +79,8 @@ class EnsembleProfiler[R: Recommendation](Profiler[R]):
                 for items in contributions.values()
             ]
         else:
+            assert self._build_fn is not None, "mode='weighted_sum' requires build_fn (checked in __init__)"
+            build_fn = self._build_fn
             tallies: dict[Hashable, Tally] = {}
             for candidate, items in contributions.items():
                 tally = tallies.setdefault(candidate, Tally())
@@ -87,7 +89,7 @@ class EnsembleProfiler[R: Recommendation](Profiler[R]):
 
             total = sum(t.total_weight for t in tallies.values()) or 1.0
             recommendations = [
-                self._build_fn(candidate, round(tally.total_weight / total, 3), "; ".join(tally.reasons))
+                build_fn(candidate, round(tally.total_weight / total, 3), "; ".join(tally.reasons))
                 for candidate, tally in tallies.items()
                 if tally.total_weight > 0
             ]

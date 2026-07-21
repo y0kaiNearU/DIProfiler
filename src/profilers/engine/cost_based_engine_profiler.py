@@ -60,6 +60,8 @@ class CostBasedEngineProfiler(Profiler[EngineRecommendation]):
 
     def profile(self, request: PipelineRequest) -> ProfilingResult[EngineRecommendation]:
         sizing = self._resource_profiler.profile(request).best
+        if sizing is None:
+            return ProfilingResult(request=request, recommendations=[])
         memory_gb = sizing.memory_bytes / _GB
 
         costs: dict[EngineType, float] = {}

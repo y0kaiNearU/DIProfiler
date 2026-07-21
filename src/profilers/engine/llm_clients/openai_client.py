@@ -98,4 +98,5 @@ class OpenAILLMClient:
 
         tool_call = response.choices[0].message.tool_calls[0]
         arguments = json.loads(tool_call.function.arguments)
-        return arguments["recommendations"]
+        recommendations: list[dict[str, Any]] = arguments["recommendations"]
+        return recommendations

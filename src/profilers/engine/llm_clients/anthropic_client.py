@@ -92,4 +92,5 @@ class AnthropicLLMClient:
         )
 
         tool_block = next(b for b in response.content if b.type == "tool_use")
-        return tool_block.input["recommendations"]
+        recommendations: list[dict[str, Any]] = tool_block.input["recommendations"]
+        return recommendations

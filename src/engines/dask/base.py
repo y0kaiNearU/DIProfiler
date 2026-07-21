@@ -7,7 +7,7 @@ class DaskBase:
 
     def __init__(self, factory: Callable[[], Any] | None = None) -> None:
         self._factory = factory
-        self._client = None
+        self._client: Any = None
 
     def _get_client(self) -> Any:
         if self._client is None:

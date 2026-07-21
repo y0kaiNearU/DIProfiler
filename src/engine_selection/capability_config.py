@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from engine_selection.capabilities import CapabilityRegistry, SupportsDataSource, SupportsFormat
+from engine_selection.capabilities import Capability, CapabilityRegistry, SupportsDataSource, SupportsFormat
 from engines.dask import CAPABILITIES as DASK_CAPABILITIES
 from engines.datafusion import CAPABILITIES as DATAFUSION_CAPABILITIES
 from engines.duckdb import CAPABILITIES as DUCKDB_CAPABILITIES
@@ -25,9 +25,9 @@ def build_default_capabilities() -> CapabilityRegistry:
     return registry
 
 
-def build_required_capabilities(request: PipelineRequest) -> list:
+def build_required_capabilities(request: PipelineRequest) -> list[Capability]:
     """Build list of capabilities required by request."""
-    caps = []
+    caps: list[Capability] = []
 
     # Source capabilities
     if isinstance(request.source.source, FileSource):
