@@ -23,6 +23,7 @@ class DaskWriter(DaskBase, Writer):
         return False
 
     def write(self, frame: nw.LazyFrame, request: PipelineRequest) -> None:
+        assert request.destination is not None
         self._get_client()
         dest = request.destination.source
         if isinstance(dest, FileSource):

@@ -26,6 +26,7 @@ class SparkWriter(SparkBase, Writer):
         return False
 
     def write(self, frame: nw.LazyFrame, request: PipelineRequest) -> None:
+        assert request.destination is not None
         dest = request.destination.source
         if isinstance(dest, FileSource):
             return file_writer.write(frame, dest)
