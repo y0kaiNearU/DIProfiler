@@ -5,11 +5,27 @@ import narwhals as nw
 from engine_selection.loader import Loader
 from engine_selection.registry import LoaderRegistry, WriterRegistry
 from engine_selection.writer import Writer
+from engines.dask.loader import DaskLoader
+from engines.dask.writer import DaskWriter
+from engines.datafusion.loader import DataFusionLoader
+from engines.datafusion.writer import DataFusionWriter
 from engines.duckdb.loader import DuckDBLoader
 from engines.duckdb.writer import DuckDBWriter
+from engines.pandas.loader import PandasLoader
+from engines.pandas.writer import PandasWriter
+from engines.polars.loader import PolarsLoader
+from engines.polars.writer import PolarsWriter
 from engines.spark.loader import SparkLoader
 from engines.spark.writer import SparkWriter
 from models.models import EngineType, PipelineRequest
+
+
+def _default_loaders() -> list[Loader]:
+    return [DuckDBLoader(), SparkLoader(), DataFusionLoader(), PolarsLoader(), DaskLoader(), PandasLoader()]
+
+
+def _default_writers() -> list[Writer]:
+    return [DuckDBWriter(), SparkWriter(), DataFusionWriter(), PolarsWriter(), DaskWriter(), PandasWriter()]
 
 
 class FrameLoader:
@@ -18,7 +34,7 @@ class FrameLoader:
     def __init__(self, engine: EngineType, loaders: list[Loader] | None = None) -> None:
         self.engine = engine
         self._registry = LoaderRegistry()
-        for loader in loaders or [DuckDBLoader(), SparkLoader()]:
+        for loader in loaders or _default_loaders():
             self._registry.register(loader)
 
     def load(self, request: PipelineRequest) -> nw.LazyFrame:
@@ -36,7 +52,7 @@ class FrameWriter:
     def __init__(self, engine: EngineType, writers: list[Writer] | None = None) -> None:
         self.engine = engine
         self._registry = WriterRegistry()
-        for writer in writers or [DuckDBWriter(), SparkWriter()]:
+        for writer in writers or _default_writers():
             self._registry.register(writer)
 
     def write(self, frame: nw.LazyFrame, request: PipelineRequest) -> None:
