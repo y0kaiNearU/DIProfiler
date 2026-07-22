@@ -17,6 +17,8 @@ from engines.datafusion.loader import DataFusionLoader
 from engines.datafusion.writer import DataFusionWriter
 from engines.duckdb.loader import DuckDBLoader
 from engines.duckdb.writer import DuckDBWriter
+from engines.pandas.loader import PandasLoader
+from engines.pandas.writer import PandasWriter
 from engines.polars.loader import PolarsLoader
 from engines.polars.writer import PolarsWriter
 from engines.spark.loader import SparkLoader
@@ -31,6 +33,7 @@ _ENGINE_MODULES: dict[EngineType, str] = {
     EngineType.DATAFUSION: "datafusion",
     EngineType.POLARS: "polars",
     EngineType.DASK: "dask",
+    EngineType.PANDAS: "pandas",
 }
 
 
@@ -95,6 +98,7 @@ class DIProfiler:
             DataFusionLoader(factory=datafusion_factory),
             PolarsLoader(),
             DaskLoader(factory=dask_factory),
+            PandasLoader(),
         ]))
 
         self._writer_registry = WriterRegistry()
@@ -104,6 +108,7 @@ class DIProfiler:
             DataFusionWriter(factory=datafusion_factory),
             PolarsWriter(),
             DaskWriter(factory=dask_factory),
+            PandasWriter(),
         ]))
 
         self._capabilities = capability_registry or build_default_capabilities()

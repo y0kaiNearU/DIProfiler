@@ -18,6 +18,7 @@ class EngineType(Enum):
     DATAFUSION = "datafusion"
     POLARS = "polars"
     DASK = "dask"
+    PANDAS = "pandas"
 
 
 class OperationType(Enum):
