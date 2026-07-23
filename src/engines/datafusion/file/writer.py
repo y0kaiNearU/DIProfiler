@@ -14,7 +14,10 @@ SUPPORTED_FORMATS = (FileFormat.CSV, FileFormat.PARQUET, FileFormat.JSON)
 
 
 def write(frame: nw.LazyFrame, dest: FileSource) -> None:
-    table = nw.to_native(frame.collect()).to_arrow()
+    # narwhals' own to_arrow() works regardless of which engine produced the
+    # frame; the native object itself (e.g. a pandas.DataFrame) may not have
+    # its own .to_arrow() method.
+    table = frame.collect().to_arrow()
 
     append = dest.write_mode == WriteMode.APPEND and os.path.exists(dest.path)
 

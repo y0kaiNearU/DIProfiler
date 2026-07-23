@@ -25,5 +25,7 @@ def load(ctx: Any, src: FileSource) -> nw.LazyFrame:
     except Exception as e:
         raise RuntimeError(f"DataFusion failed to read {src.format.value} from '{src.path}': {e}") from e
 
-    frame: nw.LazyFrame = nw.from_native(native)
+    # narwhals has no DataFusion backend; bridge through Arrow (this
+    # materializes the query immediately, losing DataFusion's own laziness).
+    frame: nw.LazyFrame = nw.from_native(native.to_arrow_table()).lazy()
     return frame

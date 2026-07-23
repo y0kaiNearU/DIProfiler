@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-from typing import cast
 
 import narwhals as nw
 
@@ -12,12 +11,13 @@ SUPPORTED_FORMATS = (FileFormat.CSV, FileFormat.PARQUET, FileFormat.JSON)
 
 def write(frame: nw.LazyFrame, dest: FileSource) -> None:
     try:
-        import polars as pl
+        import polars as pl  # noqa: F401 — imported for the ImportError message below
     except ImportError as e:
         raise ImportError("Polars is required: uv add polars") from e
 
-    # from_arrow() on a full Table always yields a DataFrame, never a Series.
-    df = cast("pl.DataFrame", pl.from_arrow(nw.to_native(frame.collect()).to_arrow()))
+    # narwhals' own to_polars() works regardless of which engine produced the
+    # frame (pandas, pyarrow from DataFusion, etc.), no arrow round-trip needed.
+    df = frame.collect().to_polars()
     append = dest.write_mode == WriteMode.APPEND and os.path.exists(dest.path)
 
     try:
