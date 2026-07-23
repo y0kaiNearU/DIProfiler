@@ -10,12 +10,14 @@ SUPPORTED_FORMATS = (FileFormat.CSV, FileFormat.PARQUET, FileFormat.JSON)
 
 
 def load(conn: Any, src: FileSource) -> nw.LazyFrame:
+    frame: nw.LazyFrame
     match src.format:
         case FileFormat.CSV:
-            return nw.from_native(conn.read_csv(src.path))
+            frame = nw.from_native(conn.read_csv(src.path))
         case FileFormat.PARQUET:
-            return nw.from_native(conn.read_parquet(src.path))
+            frame = nw.from_native(conn.read_parquet(src.path))
         case FileFormat.JSON:
-            return nw.from_native(conn.read_json(src.path))
+            frame = nw.from_native(conn.read_json(src.path))
         case _:
             raise NotImplementedError(f"DuckDB file loader does not support {src.format}")
+    return frame

@@ -16,4 +16,5 @@ def load(spark: Any, src: DatabaseSource) -> nw.LazyFrame:
         raise RuntimeError(
             f"Spark failed to read from {src.database_type} {location}: {e}"
         ) from e
-    return nw.from_native(native)
+    frame: nw.LazyFrame = nw.from_native(native)
+    return frame

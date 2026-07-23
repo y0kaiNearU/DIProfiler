@@ -28,6 +28,7 @@ dev = [
     "pytest>=8.0",
     "ruff>=0.4",
     "mypy>=1.14",
+    "pyspark>=3.5",
 ]
 
 [tool.uv]

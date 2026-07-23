@@ -7,7 +7,7 @@ class DuckDBBase:
 
     def __init__(self, factory: Callable[[], Any] | None = None) -> None:
         self._factory = factory
-        self._connection = None
+        self._connection: Any = None
 
     def _get_connection(self) -> Any:
         if self._connection is None:

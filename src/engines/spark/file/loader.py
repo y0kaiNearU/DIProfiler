@@ -28,4 +28,5 @@ def load(spark: Any, src: FileSource) -> nw.LazyFrame:
             native = spark.read.format("iceberg").load(src.path)
         case _:
             raise NotImplementedError(f"Spark file loader does not support {src.format}")
-    return nw.from_native(native)
+    frame: nw.LazyFrame = nw.from_native(native)
+    return frame

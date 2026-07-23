@@ -25,4 +25,5 @@ def load(ctx: Any, src: FileSource) -> nw.LazyFrame:
     except Exception as e:
         raise RuntimeError(f"DataFusion failed to read {src.format.value} from '{src.path}': {e}") from e
 
-    return nw.from_native(native)
+    frame: nw.LazyFrame = nw.from_native(native)
+    return frame

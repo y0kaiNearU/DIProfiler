@@ -7,7 +7,7 @@ class DataFusionBase:
 
     def __init__(self, factory: Callable[[], Any] | None = None) -> None:
         self._factory = factory
-        self._ctx = None
+        self._ctx: Any = None
 
     def _get_context(self) -> Any:
         if self._ctx is None:

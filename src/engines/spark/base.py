@@ -7,7 +7,7 @@ class SparkBase:
 
     def __init__(self, factory: Callable[[], Any] | None = None) -> None:
         self._factory = factory
-        self._session = None
+        self._session: Any = None
 
     def _get_session(self) -> Any:
         if self._session is None:

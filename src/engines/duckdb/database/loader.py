@@ -25,4 +25,5 @@ def load(conn: Any, src: DatabaseSource) -> nw.LazyFrame:
             f"DuckDB failed to read from {src.database_type} {location}: {e}"
         ) from e
 
-    return nw.from_native(native)
+    frame: nw.LazyFrame = nw.from_native(native)
+    return frame
