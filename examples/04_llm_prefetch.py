@@ -113,7 +113,7 @@ for rec in result.recommendations:
 # Visualisation
 # ---------------------------------------------------------------------------
 
-_ENGINE_COLORS = {"duckdb": "#f5a623", "datafusion": "#4a90d9", "spark": "#e84040"}
+_ENGINE_COLORS = {"duckdb": "#f5a623", "polars": "#7b4fd6", "spark": "#e84040"}
 
 engines = [rec.engine.value for rec in result.recommendations]
 confs   = [rec.confidence   for rec in result.recommendations]

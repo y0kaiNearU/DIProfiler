@@ -39,15 +39,6 @@ def _size_bytes_rule(req: PipelineRequest) -> Vote | None:
     return None
 
 
-def _datafusion_size_rule(req: PipelineRequest) -> Vote | None:
-    size = req.source.size_bytes
-    if size is None:
-        return None
-    if size <= _MEDIUM_DATASET_BYTES:
-        return EngineType.DATAFUSION, 0.55, f"dataset size {size / _GB:.2f} GB suits DataFusion's single-node Arrow execution"
-    return None
-
-
 def _row_count_rule(req: PipelineRequest) -> Vote | None:
     rows = req.source.row_count
     if rows is None:
@@ -55,15 +46,6 @@ def _row_count_rule(req: PipelineRequest) -> Vote | None:
     if rows >= _LARGE_ROW_COUNT:
         return EngineType.SPARK, 0.5, f"{rows:,} rows benefits from distributed processing"
     return EngineType.DUCKDB, 0.4, f"{rows:,} rows is well within single-node capacity"
-
-
-def _datafusion_row_count_rule(req: PipelineRequest) -> Vote | None:
-    rows = req.source.row_count
-    if rows is None:
-        return None
-    if rows < _LARGE_ROW_COUNT:
-        return EngineType.DATAFUSION, 0.35, f"{rows:,} rows is well within DataFusion's single-node capacity"
-    return None
 
 
 def _polars_size_rule(req: PipelineRequest) -> Vote | None:
@@ -115,7 +97,7 @@ def _format_rule(req: PipelineRequest) -> Vote | None:
     if fmt in (FileFormat.ORC, FileFormat.DELTA):
         return EngineType.SPARK, 0.4, f"{fmt.value} format is native to the Spark/Hadoop ecosystem"
     if fmt == FileFormat.PARQUET:
-        return EngineType.DATAFUSION, 0.35, f"Parquet is Arrow-native; DataFusion reads it without conversion overhead"
+        return EngineType.POLARS, 0.35, "Parquet is Arrow-native; Polars reads it without conversion overhead"
     if fmt in (FileFormat.CSV, FileFormat.JSON):
         return EngineType.DUCKDB, 0.3, f"{fmt.value} is natively supported by DuckDB"
     return None
@@ -134,11 +116,9 @@ def _operation_rule(req: PipelineRequest) -> Vote | None:
 DEFAULT_RULES: list[Rule] = [
     _required_engine_rule,
     _size_bytes_rule,
-    _datafusion_size_rule,
     _polars_size_rule,
     _dask_size_rule,
     _row_count_rule,
-    _datafusion_row_count_rule,
     _polars_row_count_rule,
     _dask_row_count_rule,
     _format_rule,

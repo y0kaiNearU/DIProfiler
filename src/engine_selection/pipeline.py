@@ -13,8 +13,6 @@ from engine_selection.registry import LoaderRegistry, WriterRegistry
 from engine_selection.writer import Writer
 from engines.dask.loader import DaskLoader
 from engines.dask.writer import DaskWriter
-from engines.datafusion.loader import DataFusionLoader
-from engines.datafusion.writer import DataFusionWriter
 from engines.duckdb.loader import DuckDBLoader
 from engines.duckdb.writer import DuckDBWriter
 from engines.pandas.loader import PandasLoader
@@ -30,7 +28,6 @@ from profilers.engine.rule_based_engine_profiler import RuleBasedEngineProfiler
 _ENGINE_MODULES: dict[EngineType, str] = {
     EngineType.DUCKDB: "duckdb",
     EngineType.SPARK: "pyspark",
-    EngineType.DATAFUSION: "datafusion",
     EngineType.POLARS: "polars",
     EngineType.DASK: "dask",
     EngineType.PANDAS: "pandas",
@@ -88,14 +85,12 @@ class DIProfiler:
         factories = engine_factories or {}
         duckdb_factory = factories.get(EngineType.DUCKDB)
         spark_factory = factories.get(EngineType.SPARK)
-        datafusion_factory = factories.get(EngineType.DATAFUSION)
         dask_factory = factories.get(EngineType.DASK)
 
         self._loader_registry = LoaderRegistry()
         self._loader_registry.register(*(loaders or [
             DuckDBLoader(factory=duckdb_factory),
             SparkLoader(factory=spark_factory),
-            DataFusionLoader(factory=datafusion_factory),
             PolarsLoader(),
             DaskLoader(factory=dask_factory),
             PandasLoader(),
@@ -105,7 +100,6 @@ class DIProfiler:
         self._writer_registry.register(*(writers or [
             DuckDBWriter(factory=duckdb_factory),
             SparkWriter(factory=spark_factory),
-            DataFusionWriter(factory=datafusion_factory),
             PolarsWriter(),
             DaskWriter(factory=dask_factory),
             PandasWriter(),

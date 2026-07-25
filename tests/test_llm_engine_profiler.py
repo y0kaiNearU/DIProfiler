@@ -109,7 +109,7 @@ def test_profile_returns_correct_recommendations():
     client = _StubLLMClient([
         {"engine": "duckdb", "confidence": 0.7, "reasoning": "small file"},
         {"engine": "spark", "confidence": 0.2, "reasoning": "overkill but available"},
-        {"engine": "datafusion", "confidence": 0.1, "reasoning": "viable"},
+        {"engine": "polars", "confidence": 0.1, "reasoning": "viable"},
     ])
     profiler = LLMEngineProfiler(client)
 
@@ -122,7 +122,7 @@ def test_profile_recommendations_sorted_descending():
     client = _StubLLMClient([
         {"engine": "spark", "confidence": 0.5, "reasoning": "r"},
         {"engine": "duckdb", "confidence": 0.3, "reasoning": "r"},
-        {"engine": "datafusion", "confidence": 0.2, "reasoning": "r"},
+        {"engine": "polars", "confidence": 0.2, "reasoning": "r"},
     ])
     profiler = LLMEngineProfiler(client)
 

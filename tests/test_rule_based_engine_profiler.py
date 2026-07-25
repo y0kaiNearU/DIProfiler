@@ -13,8 +13,6 @@ from profilers.engine.rule_based_engine_profiler import (
     RuleBasedEngineProfiler,
     _dask_row_count_rule,
     _dask_size_rule,
-    _datafusion_row_count_rule,
-    _datafusion_size_rule,
     _format_rule,
     _operation_rule,
     _polars_row_count_rule,
@@ -75,18 +73,6 @@ class TestSizeBytesRule:
 
     def test_no_size_returns_none(self):
         assert _size_bytes_rule(_req()) is None
-
-
-class TestDataFusionSizeRule:
-    def test_small_dataset_votes_datafusion(self):
-        engine, _, _ = _datafusion_size_rule(_req(size_bytes=200 * _MB))
-        assert engine == EngineType.DATAFUSION
-
-    def test_large_dataset_returns_none(self):
-        assert _datafusion_size_rule(_req(size_bytes=5 * _GB)) is None
-
-    def test_no_size_returns_none(self):
-        assert _datafusion_size_rule(_req()) is None
 
 
 class TestPolarsSizeRule:
@@ -156,18 +142,6 @@ class TestRowCountRule:
         assert _row_count_rule(_req()) is None
 
 
-class TestDataFusionRowCountRule:
-    def test_small_row_count_votes_datafusion(self):
-        engine, _, _ = _datafusion_row_count_rule(_req(row_count=50_000))
-        assert engine == EngineType.DATAFUSION
-
-    def test_huge_row_count_returns_none(self):
-        assert _datafusion_row_count_rule(_req(row_count=200_000_000)) is None
-
-    def test_no_row_count_returns_none(self):
-        assert _datafusion_row_count_rule(_req()) is None
-
-
 class TestFormatRule:
     def test_orc_votes_spark(self):
         engine, _, _ = _format_rule(_req(fmt=FileFormat.ORC))
@@ -177,9 +151,9 @@ class TestFormatRule:
         engine, _, _ = _format_rule(_req(fmt=FileFormat.DELTA))
         assert engine == EngineType.SPARK
 
-    def test_parquet_votes_datafusion(self):
+    def test_parquet_votes_polars(self):
         engine, _, _ = _format_rule(_req(fmt=FileFormat.PARQUET))
-        assert engine == EngineType.DATAFUSION
+        assert engine == EngineType.POLARS
 
     def test_csv_votes_duckdb(self):
         engine, _, _ = _format_rule(_req(fmt=FileFormat.CSV))
@@ -227,10 +201,10 @@ class TestRuleBasedEngineProfiler:
         result = self.profiler.profile(req)
         assert result.best.engine == EngineType.DUCKDB
 
-    def test_medium_parquet_recommends_datafusion(self):
+    def test_medium_parquet_recommends_polars(self):
         req = _req(size_bytes=800 * _MB, fmt=FileFormat.PARQUET, row_count=4_000_000)
         result = self.profiler.profile(req)
-        assert result.best.engine == EngineType.DATAFUSION
+        assert result.best.engine == EngineType.POLARS
 
     def test_midsize_unrecognized_format_recommends_polars(self):
         req = _req(size_bytes=2 * _GB, fmt=FileFormat.ICEBERG)

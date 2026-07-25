@@ -1,15 +1,13 @@
 """
 Regression coverage for writers that assumed the incoming nw.LazyFrame's
 native object exposes its own .to_arrow() (true for Polars/DuckDB natives,
-false for pandas and DataFusion-bridged pyarrow.Table natives). Loading with
-one engine and writing with another is an explicitly supported pattern
-(FrameLoader/FrameWriter can be given different engines), so every writer
-must accept a frame regardless of which engine produced it.
+false for pandas). Loading with one engine and writing with another is an
+explicitly supported pattern (FrameLoader/FrameWriter can be given different
+engines), so every writer must accept a frame regardless of which engine
+produced it.
 """
 import pytest
 
-from engines.datafusion.loader import DataFusionLoader
-from engines.datafusion.writer import DataFusionWriter
 from engines.duckdb.loader import DuckDBLoader
 from engines.duckdb.writer import DuckDBWriter
 from engines.pandas.loader import PandasLoader
@@ -22,13 +20,11 @@ LOADERS = {
     "duckdb": DuckDBLoader,
     "polars": PolarsLoader,
     "pandas": PandasLoader,
-    "datafusion": DataFusionLoader,
 }
 WRITERS = {
     "duckdb": DuckDBWriter,
     "polars": PolarsWriter,
     "pandas": PandasWriter,
-    "datafusion": DataFusionWriter,
 }
 
 

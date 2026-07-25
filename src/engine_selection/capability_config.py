@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from engine_selection.capabilities import Capability, CapabilityRegistry, SupportsDataSource, SupportsFormat
 from engines.dask import CAPABILITIES as DASK_CAPABILITIES
-from engines.datafusion import CAPABILITIES as DATAFUSION_CAPABILITIES
 from engines.duckdb import CAPABILITIES as DUCKDB_CAPABILITIES
 from engines.pandas import CAPABILITIES as PANDAS_CAPABILITIES
 from engines.polars import CAPABILITIES as POLARS_CAPABILITIES
@@ -11,7 +10,6 @@ from models.models import EngineType, PipelineRequest, DatabaseSource, FileSourc
 
 _ENGINE_CAPABILITIES = {
     EngineType.DUCKDB: DUCKDB_CAPABILITIES,
-    EngineType.DATAFUSION: DATAFUSION_CAPABILITIES,
     EngineType.SPARK: SPARK_CAPABILITIES,
     EngineType.POLARS: POLARS_CAPABILITIES,
     EngineType.DASK: DASK_CAPABILITIES,

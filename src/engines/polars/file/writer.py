@@ -16,7 +16,7 @@ def write(frame: nw.LazyFrame, dest: FileSource) -> None:
         raise ImportError("Polars is required: uv add polars") from e
 
     # narwhals' own to_polars() works regardless of which engine produced the
-    # frame (pandas, pyarrow from DataFusion, etc.), no arrow round-trip needed.
+    # frame (pandas, etc.), no arrow round-trip needed.
     df = frame.collect().to_polars()
     append = dest.write_mode == WriteMode.APPEND and os.path.exists(dest.path)
 

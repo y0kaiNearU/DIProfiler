@@ -107,14 +107,8 @@ class TestBuildDefaultCapabilities:
     def test_spark_reads_delta(self):
         assert self.caps.can_handle(EngineType.SPARK, [SupportsFormat(FileFormat.DELTA, "read")])
 
-    def test_datafusion_reads_parquet(self):
-        assert self.caps.can_handle(EngineType.DATAFUSION, [SupportsFormat(FileFormat.PARQUET, "read")])
-
     def test_duckdb_reads_postgresql(self):
         assert self.caps.can_handle(EngineType.DUCKDB, [SupportsDataSource("postgresql", "read")])
-
-    def test_datafusion_does_not_read_postgresql(self):
-        assert not self.caps.can_handle(EngineType.DATAFUSION, [SupportsDataSource("postgresql", "read")])
 
     def test_spark_reads_oracle(self):
         assert self.caps.can_handle(EngineType.SPARK, [SupportsDataSource("oracle", "read")])

@@ -17,7 +17,7 @@ from profilers.engine.ml_engine_profiler import MLEngineProfiler
 class _MockModel:
     """Minimal sklearn-compatible classifier."""
 
-    classes_ = ["duckdb", "spark", "datafusion"]
+    classes_ = ["duckdb", "spark", "polars"]
 
     def predict_proba(self, X):
         # Return fixed probabilities regardless of input
@@ -25,7 +25,7 @@ class _MockModel:
 
 
 class _HighSparkModel:
-    classes_ = ["duckdb", "spark", "datafusion"]
+    classes_ = ["duckdb", "spark", "polars"]
 
     def predict_proba(self, X):
         return np.array([[0.1, 0.8, 0.1]] * len(X))
@@ -78,7 +78,7 @@ def test_excludes_engines_not_in_available():
     req = _req(available_engines=[EngineType.DUCKDB, EngineType.SPARK])
     result = profiler.profile(req)
     engines = {r.engine for r in result.recommendations}
-    assert EngineType.DATAFUSION not in engines
+    assert EngineType.POLARS not in engines
 
 
 def test_only_one_engine_available():
@@ -91,7 +91,7 @@ def test_only_one_engine_available():
 
 def test_zero_probability_engines_excluded():
     class ZeroSparkModel:
-        classes_ = ["duckdb", "spark", "datafusion"]
+        classes_ = ["duckdb", "spark", "polars"]
 
         def predict_proba(self, X):
             return np.array([[0.9, 0.0, 0.1]] * len(X))
@@ -104,7 +104,7 @@ def test_zero_probability_engines_excluded():
 
 def test_confidence_is_rounded_to_three_decimal_places():
     class PreciseModel:
-        classes_ = ["duckdb", "spark", "datafusion"]
+        classes_ = ["duckdb", "spark", "polars"]
 
         def predict_proba(self, X):
             return np.array([[0.123456789, 0.5, 0.376543211]] * len(X))

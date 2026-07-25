@@ -18,7 +18,7 @@ from profilers.engine.rule_based_engine_profiler import DEFAULT_RULES, RuleBased
 _MB = 1024 ** 2
 _GB = 1024 ** 3
 
-_ENGINE_COLORS = {"duckdb": "#f5a623", "datafusion": "#4a90d9", "polars": "#7b4fd6", "dask": "#38a169", "spark": "#e84040"}
+_ENGINE_COLORS = {"duckdb": "#f5a623", "polars": "#7b4fd6", "dask": "#38a169", "spark": "#e84040"}
 _ALL_ENGINES   = [e.value for e in EngineType if e != EngineType.SPARK] + ["spark"]
 
 profiler = RuleBasedEngineProfiler()
@@ -94,9 +94,9 @@ show(
 )
 
 # ---------------------------------------------------------------------------
-# Custom rule: wide-table boost for DataFusion
+# Custom rule: wide-table boost for Polars
 #
-# DataFusion's columnar Arrow execution is especially efficient when a query
+# Polars' columnar Arrow execution is especially efficient when a query
 # touches many columns (projections over wide tables). This rule doesn't exist
 # in the default set — we add it on top to encode that domain knowledge.
 # ---------------------------------------------------------------------------
@@ -105,9 +105,9 @@ def _wide_table_rule(req: PipelineRequest):
     cols = req.source.num_columns
     if cols is not None and cols > 50:
         return (
-            EngineType.DATAFUSION,
+            EngineType.POLARS,
             0.45,
-            f"{cols} columns benefits from DataFusion's columnar Arrow execution",
+            f"{cols} columns benefits from Polars' columnar Arrow execution",
         )
     return None
 

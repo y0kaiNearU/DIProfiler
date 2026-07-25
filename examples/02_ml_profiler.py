@@ -75,7 +75,7 @@ ml_profiler = MLEngineProfiler(model)
 # Step 3 — Compare rule-based vs ML on the same requests
 # ---------------------------------------------------------------------------
 
-_ENGINE_COLORS = {"duckdb": "#f5a623", "datafusion": "#4a90d9", "spark": "#e84040"}
+_ENGINE_COLORS = {"duckdb": "#f5a623", "polars": "#7b4fd6", "spark": "#e84040"}
 _ALL_ENGINES   = [e.value for e in EngineType]
 
 rule_profiler = RuleBasedEngineProfiler()

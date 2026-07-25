@@ -1,6 +1,6 @@
 # DIProfiler
 
-Profiles data pipeline requests and recommends the best query engine (pandas, DuckDB, DataFusion, Polars, Dask, Spark) based on dataset characteristics. Includes rule-based, ML-based, prefetching, and LLM-based profilers.
+Profiles data pipeline requests and recommends the best query engine (pandas, DuckDB, Polars, Dask, Spark) based on dataset characteristics. Includes rule-based, ML-based, prefetching, and LLM-based profilers.
 
 ## Setup
 
@@ -32,9 +32,6 @@ Install only the engines you want to benchmark:
 # DuckDB
 uv add duckdb
 
-# DataFusion
-uv add datafusion pyarrow
-
 # Polars
 uv add polars
 
@@ -62,7 +59,7 @@ export ANTHROPIC_API_KEY="sk-..."   # bash
 ### Install everything at once
 
 ```bash
-uv add duckdb datafusion pyarrow polars "dask[dataframe,distributed]" anthropic
+uv add duckdb polars "dask[dataframe,distributed]" anthropic
 uv pip install "pyspark==3.5.5"   # optional, requires Java 8+
 ```
 
@@ -73,7 +70,7 @@ Any engine or profiler whose dependency is missing is skipped automatically — 
 ```
 src/
   core/        base interfaces
-  engines/     duckdb / datafusion / polars / dask / spark adapters
+  engines/     duckdb / polars / dask / spark / pandas adapters
   models/      shared data models
   profilers/   rule-based, ML, prefetching, LLM profilers
 examples/      runnable scripts (01–05)

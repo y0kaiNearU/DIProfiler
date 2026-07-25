@@ -8,7 +8,6 @@ with each profiler's recommendation marked on the chart.
 Engines tested:
   - pandas       always (baseline)
   - duckdb       if installed  (uv add duckdb)
-  - datafusion   if installed  (uv add datafusion pyarrow)
   - polars       if installed  (uv add polars)
   - dask         if installed  (uv add "dask[dataframe,distributed]")
   - spark        if installed manually — NOT a project dependency, install separately:
@@ -63,10 +62,6 @@ _available_engine_types: list[EngineType] = []
 if importlib.util.find_spec("duckdb"):
     import duckdb
     _available_engine_types.append(EngineType.DUCKDB)
-
-if importlib.util.find_spec("datafusion") and importlib.util.find_spec("pyarrow"):
-    import datafusion
-    _available_engine_types.append(EngineType.DATAFUSION)
 
 if importlib.util.find_spec("polars"):
     import polars
@@ -214,14 +209,6 @@ def _run_duckdb(path: str) -> float:
     return time.perf_counter() - t0
 
 
-def _run_datafusion(path: str) -> float:
-    t0 = time.perf_counter()
-    ctx = datafusion.SessionContext()
-    ctx.register_csv("data", path)
-    ctx.sql(_SQL.format(src="data")).collect()
-    return time.perf_counter() - t0
-
-
 def _run_polars(path: str) -> float:
     t0 = time.perf_counter()
     (
@@ -252,8 +239,6 @@ def _run_spark(path: str) -> float:
 _RUNNERS: dict[str, object] = {"pandas": _run_pandas}
 if EngineType.DUCKDB in _available_engine_types:
     _RUNNERS["duckdb"] = _run_duckdb
-if EngineType.DATAFUSION in _available_engine_types:
-    _RUNNERS["datafusion"] = _run_datafusion
 if EngineType.POLARS in _available_engine_types:
     _RUNNERS["polars"] = _run_polars
 if EngineType.DASK in _available_engine_types:
@@ -325,9 +310,9 @@ if _spark is not None:
 if EngineType.DASK in _available_engine_types:
     _dask_client.close()
 
-_ENGINE_COLORS  = {"pandas": "#aaaaaa", "duckdb": "#f5a623", "datafusion": "#4a90d9", "polars": "#7b4fd6", "dask": "#38a169", "spark": "#e84040"}
-_ENGINE_MARKERS = {"pandas": "^",       "duckdb": "o",       "datafusion": "s",       "polars": "v",       "dask": "P",       "spark": "D"}
-_ENGINE_LABELS  = {"pandas": "pandas (baseline)", "duckdb": "DuckDB", "datafusion": "DataFusion", "polars": "Polars", "dask": "Dask", "spark": "Spark (local[*])"}
+_ENGINE_COLORS  = {"pandas": "#aaaaaa", "duckdb": "#f5a623", "polars": "#7b4fd6", "dask": "#38a169", "spark": "#e84040"}
+_ENGINE_MARKERS = {"pandas": "^",       "duckdb": "o",       "polars": "v",       "dask": "P",       "spark": "D"}
+_ENGINE_LABELS  = {"pandas": "pandas (baseline)", "duckdb": "DuckDB", "polars": "Polars", "dask": "Dask", "spark": "Spark (local[*])"}
 
 # Marker shape per profiler recommendation
 _PROFILER_STYLE = {

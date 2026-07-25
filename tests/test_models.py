@@ -85,7 +85,7 @@ def test_profiling_result_best_returns_highest_confidence():
     recs = [
         EngineRecommendation(engine=EngineType.DUCKDB, confidence=0.6, reasoning="a"),
         EngineRecommendation(engine=EngineType.SPARK, confidence=0.3, reasoning="b"),
-        EngineRecommendation(engine=EngineType.DATAFUSION, confidence=0.1, reasoning="c"),
+        EngineRecommendation(engine=EngineType.POLARS, confidence=0.1, reasoning="c"),
     ]
     result = ProfilingResult(request=req, recommendations=recs)
     assert result.best.engine == EngineType.DUCKDB
