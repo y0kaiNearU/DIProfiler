@@ -22,12 +22,6 @@ polars = ["polars>=1.0"]
 dask = ["dask[dataframe,distributed]>=2024.1.0"]
 llm = ["anthropic>=0.40"]
 openai = ["openai>=1.0"]
-dev = [
-    "pytest>=8.0",
-    "ruff>=0.4",
-    "mypy>=1.14",
-    "pyspark>=3.5",
-]
 
 [tool.uv]
 package = false
@@ -49,5 +43,9 @@ warn_return_any = true
 
 [dependency-groups]
 dev = [
+    "pytest>=8.0",
+    "ruff>=0.4",
+    "mypy>=1.14",
+    "pyspark>=3.5",
     "reportlab>=4.5.1",
 ]

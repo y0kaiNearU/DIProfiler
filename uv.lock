@@ -332,12 +332,6 @@ dependencies = [
 dask = [
     { name = "dask", extra = ["dataframe", "distributed"] },
 ]
-dev = [
-    { name = "mypy" },
-    { name = "pyspark" },
-    { name = "pytest" },
-    { name = "ruff" },
-]
 duckdb = [
     { name = "duckdb" },
 ]
@@ -353,7 +347,11 @@ polars = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "mypy" },
+    { name = "pyspark" },
+    { name = "pytest" },
     { name = "reportlab" },
+    { name = "ruff" },
 ]
 
 [package.metadata]
@@ -365,7 +363,6 @@ requires-dist = [
     { name = "duckdb", specifier = ">=1.5.3" },
     { name = "duckdb", marker = "extra == 'duckdb'", specifier = ">=1.0" },
     { name = "matplotlib", specifier = ">=3.9" },
-    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.14" },
     { name = "narwhals", specifier = ">=1.0" },
     { name = "numpy", specifier = ">=2.0" },
     { name = "openai", marker = "extra == 'openai'", specifier = ">=1.0" },
@@ -374,15 +371,18 @@ requires-dist = [
     { name = "polars", specifier = ">=1.42.1" },
     { name = "polars", marker = "extra == 'polars'", specifier = ">=1.0" },
     { name = "pyarrow", specifier = ">=24.0.0" },
-    { name = "pyspark", marker = "extra == 'dev'", specifier = ">=3.5" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.4" },
     { name = "scikit-learn", specifier = ">=1.4" },
 ]
-provides-extras = ["duckdb", "polars", "dask", "llm", "openai", "dev"]
+provides-extras = ["duckdb", "polars", "dask", "llm", "openai"]
 
 [package.metadata.requires-dev]
-dev = [{ name = "reportlab", specifier = ">=4.5.1" }]
+dev = [
+    { name = "mypy", specifier = ">=1.14" },
+    { name = "pyspark", specifier = ">=3.5" },
+    { name = "pytest", specifier = ">=8.0" },
+    { name = "reportlab", specifier = ">=4.5.1" },
+    { name = "ruff", specifier = ">=0.4" },
+]
 
 [[package]]
 name = "distributed"
