@@ -4,7 +4,6 @@ import os
 import shutil
 
 import narwhals as nw
-import pandas as pd
 
 from engines.dask.file.loader import _json_read_path
 from models.models import FileFormat, FileSource, WriteMode
@@ -15,6 +14,7 @@ SUPPORTED_FORMATS = (FileFormat.CSV, FileFormat.PARQUET, FileFormat.JSON)
 def write(frame: nw.LazyFrame, dest: FileSource) -> None:
     try:
         import dask.dataframe as dd
+        import pandas as pd  # dask.dataframe already depends on pandas
     except ImportError as e:
         raise ImportError('Dask is required: uv add "dask[dataframe,distributed]"') from e
 

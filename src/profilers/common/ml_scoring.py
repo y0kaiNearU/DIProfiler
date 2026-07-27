@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-import numpy as np
-
 
 def score_with_model[T](
     model: Any,
@@ -14,6 +12,8 @@ def score_with_model[T](
 
     Returns (candidate, probability) pairs for each of the model's classes.
     """
+    import numpy as np
+
     classes = [candidate_type(c) for c in model.classes_]
     probas = model.predict_proba(np.array([features], dtype=np.float32))[0]
     return list(zip(classes, probas))

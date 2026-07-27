@@ -6,66 +6,40 @@ Profiles data pipeline requests and recommends the best query engine (pandas, Du
 
 Requires Python 3.12+ and [uv](https://github.com/astral-sh/uv).
 
+The core library depends on nothing but `narwhals` and `packaging` — every
+engine and ML/LLM feature is an optional extra, installed only if you want
+it, the same way `narwhals` itself stays dependency-free until you pick a
+backend:
+
 ```bash
 uv sync
 ```
 
+That alone gets you `DIProfiler`/`RuleBasedEngineProfiler`-style profiling
+and recommendations with zero engine libraries installed. Loading or writing
+data needs the engine's own package; install only the extras you use:
+
+```bash
+uv sync --extra polars      # or duckdb, dask, spark, arrow, modin
+uv sync --extra ml          # numpy + scikit-learn + joblib, for MLEngineProfiler
+uv sync --extra llm         # anthropic, for LLMEngineProfiler/LLMPartitionProfiler
+uv sync --extra openai      # openai, same profilers via a different client
+uv sync --extra all         # everything above
+```
+
+`uv sync` also installs the `dev` dependency group by default (pytest, every
+engine, numpy/scikit-learn — everything the test suite in this repo
+exercises), so the extras above matter mainly if you want a leaner
+environment than "run the full test suite" — pass `--no-default-groups`
+alongside `--extra ...` for that. A missing engine's loader/writer raises a
+friendly `ImportError` telling you what to add (e.g. `Polars is required: uv
+add polars`).
+
 ## Running the examples
 
-```bash
-uv run python examples/01_rule_based_profiler.py
-uv run python examples/02_ml_profiler.py
-uv run python examples/03_diprofiler.py
-uv run python examples/04_llm_prefetch.py
-uv run python examples/05_benchmark.py
-```
-
-## Benchmark (`05_benchmark.py`)
-
-Generates CSVs of increasing size, times each available engine on the same aggregation query, and plots execution time with each profiler's recommendation marked on the chart.
-
-### Optional engines
-
-Install only the engines you want to benchmark:
-
-```bash
-# DuckDB
-uv add duckdb
-
-# Polars
-uv add polars
-
-# Dask
-uv add "dask[dataframe,distributed]"
-
-# Spark — requires Java 8+ installed separately
-uv pip install "pyspark==3.5.5"
-```
-
-### Optional LLM profiler
-
-```bash
-uv add anthropic
-```
-
-Set your API key before running:
-
-```bash
-$env:ANTHROPIC_API_KEY = "sk-..."   # PowerShell
-# or
-export ANTHROPIC_API_KEY="sk-..."   # bash
-```
-
-### Install everything at once
-
-```bash
-uv add duckdb polars "dask[dataframe,distributed]" anthropic
-uv pip install "pyspark==3.5.5"   # optional, requires Java 8+
-```
-
-Any engine or profiler whose dependency is missing is skipped automatically — the benchmark always runs with at least pandas and the rule-based, ML, and prefetching profilers.
-
-Arrow and Modin are always available (core dependencies) for engine recommendation via `DIProfiler`/`RuleBasedEngineProfiler`, but aren't wired into this benchmark script's timing runners yet. Modin only supports CSV/Parquet (its JSON reader has a bug as of modin 0.37); by default it runs on the Dask backend already bundled with this project (set `MODIN_ENGINE=ray` or `unidist` to use a different one).
+See [examples/README.md](examples/README.md) — they need their own
+dependency group (`matplotlib`, demo ML training, etc.) separate from both
+the lean core and the test suite's `dev` group.
 
 ## Project structure
 
@@ -75,11 +49,15 @@ src/
   engines/     duckdb / polars / dask / spark / pandas / arrow / modin adapters
   models/      shared data models
   profilers/   rule-based, ML, prefetching, LLM profilers
-examples/      runnable scripts (01–05)
+examples/      runnable scripts (01–05), own dependency group — see examples/README.md
 tests/         unit tests
 ```
 
 ## Running tests
+
+`uv sync`'s default `dev` group already installs every engine and ML
+dependency the test suite exercises (pandas, DuckDB, Polars, Dask, Spark,
+Arrow, Modin, numpy, scikit-learn) — no extra flags needed:
 
 ```bash
 uv run pytest

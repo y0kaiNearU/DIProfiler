@@ -3,27 +3,35 @@ name = "diprofiler"
 version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
-    "numpy>=2.0",
-    "pandas>=2.0",
-    "matplotlib>=3.9",
-    "scikit-learn>=1.4",
     "narwhals>=1.0",
-    "duckdb>=1.5.3",
-    "pyarrow>=24.0.0",
-    "anthropic>=0.109.1",
-    "polars>=1.42.1",
-    "dask[dataframe,distributed]>=2026.7.0",
     "packaging>=24.0",
-    "modin[dask]>=0.37.1",
 ]
 
 [project.optional-dependencies]
-duckdb = ["duckdb>=1.0"]
-polars = ["polars>=1.0"]
-dask = ["dask[dataframe,distributed]>=2024.1.0"]
-modin = ["modin[dask]>=0.31"]
-llm = ["anthropic>=0.40"]
+pandas = ["pandas>=2.0"]
+duckdb = ["duckdb>=1.5.3"]
+polars = ["polars>=1.42.1"]
+dask = ["dask[dataframe,distributed]>=2026.7.0"]
+spark = ["pyspark>=3.5"]
+arrow = ["pyarrow>=24.0.0"]
+modin = ["modin[dask]>=0.37.1"]
+ml = ["numpy>=2.0", "scikit-learn>=1.4", "joblib>=1.3"]
+llm = ["anthropic>=0.109.1"]
 openai = ["openai>=1.0"]
+all = [
+    "pandas>=2.0",
+    "duckdb>=1.5.3",
+    "polars>=1.42.1",
+    "dask[dataframe,distributed]>=2026.7.0",
+    "pyspark>=3.5",
+    "pyarrow>=24.0.0",
+    "modin[dask]>=0.37.1",
+    "numpy>=2.0",
+    "scikit-learn>=1.4",
+    "joblib>=1.3",
+    "anthropic>=0.109.1",
+    "openai>=1.0",
+]
 
 [tool.uv]
 package = false
@@ -44,10 +52,35 @@ warn_unused_ignores = true
 warn_return_any = true
 
 [dependency-groups]
+# Everything needed to run the full test suite locally (every engine adapter
+# is exercised, so every engine's package must be installed here — this is
+# the one place where "install everything" is intentional).
 dev = [
     "pytest>=8.0",
     "ruff>=0.4",
     "mypy>=1.14",
+    "pandas>=2.0",
+    "duckdb>=1.5.3",
+    "polars>=1.42.1",
+    "dask[dataframe,distributed]>=2026.7.0",
     "pyspark>=3.5",
-    "reportlab>=4.5.1",
+    "pyarrow>=24.0.0",
+    "modin[dask]>=0.37.1",
+    "numpy>=2.0",
+    "scikit-learn>=1.4",
+    "joblib>=1.3",
+]
+# Everything examples/*.py need (see examples/README.md). Anthropic is
+# included so 04_llm_prefetch.py works out of the box, given an API key;
+# pyspark is deliberately left out since it needs Java installed separately
+# and 05_benchmark.py already skips it gracefully when absent.
+examples = [
+    "matplotlib>=3.9",
+    "pandas>=2.0",
+    "duckdb>=1.5.3",
+    "polars>=1.42.1",
+    "dask[dataframe,distributed]>=2026.7.0",
+    "numpy>=2.0",
+    "scikit-learn>=1.4",
+    "anthropic>=0.109.1",
 ]
