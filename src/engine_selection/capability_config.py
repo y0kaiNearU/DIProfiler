@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from engine_selection.capabilities import Capability, CapabilityRegistry, SupportsDataSource, SupportsFormat
+from engines.arrow import CAPABILITIES as ARROW_CAPABILITIES
 from engines.dask import CAPABILITIES as DASK_CAPABILITIES
 from engines.duckdb import CAPABILITIES as DUCKDB_CAPABILITIES
 from engines.pandas import CAPABILITIES as PANDAS_CAPABILITIES
@@ -14,6 +15,7 @@ _ENGINE_CAPABILITIES = {
     EngineType.POLARS: POLARS_CAPABILITIES,
     EngineType.DASK: DASK_CAPABILITIES,
     EngineType.PANDAS: PANDAS_CAPABILITIES,
+    EngineType.ARROW: ARROW_CAPABILITIES,
 }
 
 

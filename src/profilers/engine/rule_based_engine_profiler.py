@@ -113,6 +113,20 @@ def _operation_rule(req: PipelineRequest) -> Vote | None:
     return None
 
 
+def _arrow_passthrough_rule(req: PipelineRequest) -> Vote | None:
+    src = req.source.source
+    if not isinstance(src, FileSource) or src.format != FileFormat.PARQUET:
+        return None
+    if req.operations:
+        return None
+    return (
+        EngineType.ARROW,
+        0.5,
+        "Parquet read with no transformations is a zero-copy passthrough; "
+        "Arrow avoids the overhead of a full query engine",
+    )
+
+
 DEFAULT_RULES: list[Rule] = [
     _required_engine_rule,
     _size_bytes_rule,
@@ -123,6 +137,7 @@ DEFAULT_RULES: list[Rule] = [
     _dask_row_count_rule,
     _format_rule,
     _operation_rule,
+    _arrow_passthrough_rule,
 ]
 
 

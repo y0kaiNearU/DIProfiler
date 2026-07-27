@@ -11,6 +11,8 @@ from engine_selection.capabilities import CapabilityRegistry
 from engine_selection.loader import Loader
 from engine_selection.registry import LoaderRegistry, WriterRegistry
 from engine_selection.writer import Writer
+from engines.arrow.loader import ArrowLoader
+from engines.arrow.writer import ArrowWriter
 from engines.dask.loader import DaskLoader
 from engines.dask.writer import DaskWriter
 from engines.duckdb.loader import DuckDBLoader
@@ -31,6 +33,7 @@ _ENGINE_MODULES: dict[EngineType, str] = {
     EngineType.POLARS: "polars",
     EngineType.DASK: "dask",
     EngineType.PANDAS: "pandas",
+    EngineType.ARROW: "pyarrow",
 }
 
 
@@ -94,6 +97,7 @@ class DIProfiler:
             PolarsLoader(),
             DaskLoader(factory=dask_factory),
             PandasLoader(),
+            ArrowLoader(),
         ]))
 
         self._writer_registry = WriterRegistry()
@@ -103,6 +107,7 @@ class DIProfiler:
             PolarsWriter(),
             DaskWriter(factory=dask_factory),
             PandasWriter(),
+            ArrowWriter(),
         ]))
 
         self._capabilities = capability_registry or build_default_capabilities()

@@ -18,6 +18,7 @@ class EngineType(Enum):
     POLARS = "polars"
     DASK = "dask"
     PANDAS = "pandas"
+    ARROW = "arrow"
 
 
 class OperationType(Enum):

@@ -1,6 +1,6 @@
 # DIProfiler
 
-Profiles data pipeline requests and recommends the best query engine (pandas, DuckDB, Polars, Dask, Spark) based on dataset characteristics. Includes rule-based, ML-based, prefetching, and LLM-based profilers.
+Profiles data pipeline requests and recommends the best query engine (pandas, DuckDB, Polars, Dask, Spark, Arrow) based on dataset characteristics. Includes rule-based, ML-based, prefetching, and LLM-based profilers.
 
 ## Setup
 
@@ -65,12 +65,14 @@ uv pip install "pyspark==3.5.5"   # optional, requires Java 8+
 
 Any engine or profiler whose dependency is missing is skipped automatically — the benchmark always runs with at least pandas and the rule-based, ML, and prefetching profilers.
 
+Arrow is always available (core dependency) for engine recommendation via `DIProfiler`/`RuleBasedEngineProfiler`, but isn't wired into this benchmark script's timing runners yet.
+
 ## Project structure
 
 ```
 src/
   core/        base interfaces
-  engines/     duckdb / polars / dask / spark / pandas adapters
+  engines/     duckdb / polars / dask / spark / pandas / arrow adapters
   models/      shared data models
   profilers/   rule-based, ML, prefetching, LLM profilers
 examples/      runnable scripts (01–05)

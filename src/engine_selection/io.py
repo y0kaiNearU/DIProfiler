@@ -5,6 +5,8 @@ import narwhals as nw
 from engine_selection.loader import Loader
 from engine_selection.registry import LoaderRegistry, WriterRegistry
 from engine_selection.writer import Writer
+from engines.arrow.loader import ArrowLoader
+from engines.arrow.writer import ArrowWriter
 from engines.dask.loader import DaskLoader
 from engines.dask.writer import DaskWriter
 from engines.duckdb.loader import DuckDBLoader
@@ -19,11 +21,11 @@ from models.models import EngineType, PipelineRequest
 
 
 def _default_loaders() -> list[Loader]:
-    return [DuckDBLoader(), SparkLoader(), PolarsLoader(), DaskLoader(), PandasLoader()]
+    return [DuckDBLoader(), SparkLoader(), PolarsLoader(), DaskLoader(), PandasLoader(), ArrowLoader()]
 
 
 def _default_writers() -> list[Writer]:
-    return [DuckDBWriter(), SparkWriter(), PolarsWriter(), DaskWriter(), PandasWriter()]
+    return [DuckDBWriter(), SparkWriter(), PolarsWriter(), DaskWriter(), PandasWriter(), ArrowWriter()]
 
 
 class FrameLoader:

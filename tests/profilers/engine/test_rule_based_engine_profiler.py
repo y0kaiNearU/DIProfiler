@@ -11,6 +11,7 @@ from models.models import (
 from profilers.engine.rule_based_engine_profiler import (
     DEFAULT_RULES,
     RuleBasedEngineProfiler,
+    _arrow_passthrough_rule,
     _dask_row_count_rule,
     _dask_size_rule,
     _format_rule,
@@ -167,6 +168,21 @@ class TestFormatRule:
         assert _format_rule(_req(fmt=FileFormat.ICEBERG)) is None
 
 
+class TestArrowPassthroughRule:
+    def test_parquet_no_ops_votes_arrow(self):
+        vote = _arrow_passthrough_rule(_req(fmt=FileFormat.PARQUET))
+        assert vote is not None
+        engine, _, _ = vote
+        assert engine == EngineType.ARROW
+
+    def test_parquet_with_ops_returns_none(self):
+        req = _req(fmt=FileFormat.PARQUET, ops=[OperationType.FILTER])
+        assert _arrow_passthrough_rule(req) is None
+
+    def test_non_parquet_format_returns_none(self):
+        assert _arrow_passthrough_rule(_req(fmt=FileFormat.CSV)) is None
+
+
 class TestOperationRule:
     def test_heavy_ops_on_large_data_votes_spark(self):
         req = _req(size_bytes=5 * _GB, ops=[OperationType.JOIN, OperationType.WINDOW])
@@ -205,6 +221,11 @@ class TestRuleBasedEngineProfiler:
         req = _req(size_bytes=800 * _MB, fmt=FileFormat.PARQUET, row_count=4_000_000)
         result = self.profiler.profile(req)
         assert result.best.engine == EngineType.POLARS
+
+    def test_bare_parquet_passthrough_recommends_arrow(self):
+        req = _req(fmt=FileFormat.PARQUET)
+        result = self.profiler.profile(req)
+        assert result.best.engine == EngineType.ARROW
 
     def test_midsize_unrecognized_format_recommends_polars(self):
         req = _req(size_bytes=2 * _GB, fmt=FileFormat.ICEBERG)

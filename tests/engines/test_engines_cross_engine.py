@@ -8,6 +8,8 @@ produced it.
 """
 import pytest
 
+from engines.arrow.loader import ArrowLoader
+from engines.arrow.writer import ArrowWriter
 from engines.duckdb.loader import DuckDBLoader
 from engines.duckdb.writer import DuckDBWriter
 from engines.pandas.loader import PandasLoader
@@ -20,11 +22,13 @@ LOADERS = {
     "duckdb": DuckDBLoader,
     "polars": PolarsLoader,
     "pandas": PandasLoader,
+    "arrow": ArrowLoader,
 }
 WRITERS = {
     "duckdb": DuckDBWriter,
     "polars": PolarsWriter,
     "pandas": PandasWriter,
+    "arrow": ArrowWriter,
 }
 
 
