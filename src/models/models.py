@@ -102,6 +102,13 @@ class PartitionRecommendation:
 
 
 @dataclass
+class FormatRecommendation:
+    format: FileFormat
+    confidence: float
+    reasoning: str
+
+
+@dataclass
 class ResourceRecommendation:
     cores: int
     memory_bytes: int
