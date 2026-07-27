@@ -6,29 +6,37 @@ explicitly supported pattern (FrameLoader/FrameWriter can be given different
 engines), so every writer must accept a frame regardless of which engine
 produced it.
 """
+import os
+
 import pytest
 
 from engines.arrow.loader import ArrowLoader
 from engines.arrow.writer import ArrowWriter
 from engines.duckdb.loader import DuckDBLoader
 from engines.duckdb.writer import DuckDBWriter
+from engines.modin.loader import ModinLoader
+from engines.modin.writer import ModinWriter
 from engines.pandas.loader import PandasLoader
 from engines.pandas.writer import PandasWriter
 from engines.polars.loader import PolarsLoader
 from engines.polars.writer import PolarsWriter
 from models.models import DatasetInfo, FileFormat, FileSource, PipelineRequest
 
+os.environ.setdefault("MODIN_ENGINE", "python")
+
 LOADERS = {
     "duckdb": DuckDBLoader,
     "polars": PolarsLoader,
     "pandas": PandasLoader,
     "arrow": ArrowLoader,
+    "modin": ModinLoader,
 }
 WRITERS = {
     "duckdb": DuckDBWriter,
     "polars": PolarsWriter,
     "pandas": PandasWriter,
     "arrow": ArrowWriter,
+    "modin": ModinWriter,
 }
 
 

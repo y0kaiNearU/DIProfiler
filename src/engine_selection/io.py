@@ -11,6 +11,8 @@ from engines.dask.loader import DaskLoader
 from engines.dask.writer import DaskWriter
 from engines.duckdb.loader import DuckDBLoader
 from engines.duckdb.writer import DuckDBWriter
+from engines.modin.loader import ModinLoader
+from engines.modin.writer import ModinWriter
 from engines.pandas.loader import PandasLoader
 from engines.pandas.writer import PandasWriter
 from engines.polars.loader import PolarsLoader
@@ -21,11 +23,11 @@ from models.models import EngineType, PipelineRequest
 
 
 def _default_loaders() -> list[Loader]:
-    return [DuckDBLoader(), SparkLoader(), PolarsLoader(), DaskLoader(), PandasLoader(), ArrowLoader()]
+    return [DuckDBLoader(), SparkLoader(), PolarsLoader(), DaskLoader(), PandasLoader(), ArrowLoader(), ModinLoader()]
 
 
 def _default_writers() -> list[Writer]:
-    return [DuckDBWriter(), SparkWriter(), PolarsWriter(), DaskWriter(), PandasWriter(), ArrowWriter()]
+    return [DuckDBWriter(), SparkWriter(), PolarsWriter(), DaskWriter(), PandasWriter(), ArrowWriter(), ModinWriter()]
 
 
 class FrameLoader:

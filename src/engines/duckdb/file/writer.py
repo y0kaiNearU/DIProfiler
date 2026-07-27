@@ -17,7 +17,10 @@ _FORMAT_READERS = {
 
 
 def write(conn: Any, frame: nw.LazyFrame, dest: FileSource) -> None:
-    conn.register("_frame", nw.to_native(frame.collect()))
+    # narwhals' own to_arrow() works regardless of which engine produced the
+    # frame; DuckDB's replacement scan only whitelists a few native types
+    # (pandas, pyarrow, ...) and Modin's native DataFrame isn't one of them.
+    conn.register("_frame", frame.collect().to_arrow())
 
     source = "_frame"
     target_path = dest.path

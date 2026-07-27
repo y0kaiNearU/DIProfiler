@@ -4,6 +4,7 @@ from engine_selection.capabilities import Capability, CapabilityRegistry, Suppor
 from engines.arrow import CAPABILITIES as ARROW_CAPABILITIES
 from engines.dask import CAPABILITIES as DASK_CAPABILITIES
 from engines.duckdb import CAPABILITIES as DUCKDB_CAPABILITIES
+from engines.modin import CAPABILITIES as MODIN_CAPABILITIES
 from engines.pandas import CAPABILITIES as PANDAS_CAPABILITIES
 from engines.polars import CAPABILITIES as POLARS_CAPABILITIES
 from engines.spark import CAPABILITIES as SPARK_CAPABILITIES
@@ -16,6 +17,7 @@ _ENGINE_CAPABILITIES = {
     EngineType.DASK: DASK_CAPABILITIES,
     EngineType.PANDAS: PANDAS_CAPABILITIES,
     EngineType.ARROW: ARROW_CAPABILITIES,
+    EngineType.MODIN: MODIN_CAPABILITIES,
 }
 
 

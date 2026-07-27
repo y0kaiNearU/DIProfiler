@@ -19,6 +19,7 @@ class EngineType(Enum):
     DASK = "dask"
     PANDAS = "pandas"
     ARROW = "arrow"
+    MODIN = "modin"
 
 
 class OperationType(Enum):
