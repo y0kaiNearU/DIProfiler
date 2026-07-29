@@ -1,6 +1,13 @@
 import pytest
 
-from models.models import DatabaseSource, DatasetInfo, FileFormat, FileSource, OperationType, PipelineRequest
+from models.models import (
+    DatabaseSource,
+    DatasetInfo,
+    FileFormat,
+    FileSource,
+    OperationType,
+    PipelineRequest,
+)
 from profilers.partition.llm_partition_profiler import LLMPartitionProfiler, _format_request
 
 

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Any
-
 import narwhals as nw
 
 from models.models import FileFormat, FileSource

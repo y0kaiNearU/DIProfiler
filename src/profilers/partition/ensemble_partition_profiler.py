@@ -9,7 +9,7 @@ from profilers.partition.rule_based_partition_profiler import RuleBasedPartition
 def build_ensemble_partition_profiler(
     llm_client: LLMPartitionClient | None = None,
     weights: list[float] | None = None,
-) -> EnsembleProfiler[PartitionRecommendation]:
+) -> EnsembleProfiler[PartitionRecommendation, str]:
     """
     Combines RuleBasedPartitionProfiler (name/type heuristics) and LLMPartitionProfiler
     (LLM judgment over the full schema + workload) into one ensemble, blending their

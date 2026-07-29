@@ -9,7 +9,6 @@ from models.models import (
     PipelineRequest,
 )
 from profilers.engine.rule_based_engine_profiler import (
-    DEFAULT_RULES,
     RuleBasedEngineProfiler,
     _arrow_passthrough_rule,
     _dask_row_count_rule,

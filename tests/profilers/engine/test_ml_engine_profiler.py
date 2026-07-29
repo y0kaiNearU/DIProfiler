@@ -1,8 +1,5 @@
-import io
-import tempfile
 
 import numpy as np
-import pytest
 
 from models.models import (
     DatasetInfo,
@@ -116,8 +113,8 @@ def test_confidence_is_rounded_to_three_decimal_places():
 
 
 def test_save_and_load_round_trip(tmp_path):
-    from sklearn.ensemble import RandomForestClassifier
     import numpy as np
+    from sklearn.ensemble import RandomForestClassifier
 
     X = np.array([[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]], dtype=np.float32)
     y = np.array(["duckdb", "spark"])

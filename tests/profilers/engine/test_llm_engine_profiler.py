@@ -1,8 +1,8 @@
 import pytest
 
 from models.models import (
-    DatasetInfo,
     DatabaseSource,
+    DatasetInfo,
     EngineType,
     FileFormat,
     FileSource,

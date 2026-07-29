@@ -7,6 +7,8 @@ import narwhals as nw
 from engines.spark.database.common import SUPPORTED_DATABASES, jdbc_reader
 from models.models import DatabaseSource, EngineType
 
+__all__ = ["SUPPORTED_DATABASES", "load"]
+
 
 def load(spark: Any, src: DatabaseSource) -> nw.LazyFrame:
     try:

@@ -2,7 +2,14 @@ import pytest
 
 from engines.spark.loader import SparkLoader
 from engines.spark.writer import SparkWriter
-from models.models import DatabaseSource, DatasetInfo, FileFormat, FileSource, PipelineRequest, WriteMode
+from models.models import (
+    DatabaseSource,
+    DatasetInfo,
+    FileFormat,
+    FileSource,
+    PipelineRequest,
+    WriteMode,
+)
 
 # Local SparkSession startup hangs in this environment (no output at all,
 # not even Spark's usual startup logging) — suspected missing winutils.exe/

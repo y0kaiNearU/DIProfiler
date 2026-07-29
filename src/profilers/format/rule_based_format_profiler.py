@@ -11,7 +11,9 @@ from models.models import (
     ProfilingResult,
     WriteMode,
 )
-from profilers.common.voting import Rule as _Rule, Vote as _Vote, aggregate_votes
+from profilers.common.voting import Rule as _Rule
+from profilers.common.voting import Vote as _Vote
+from profilers.common.voting import aggregate_votes
 
 Vote = _Vote[FileFormat]
 Rule = _Rule[FileFormat]

@@ -1,4 +1,3 @@
-import narwhals as nw
 import pytest
 
 from engines.duckdb.loader import DuckDBLoader

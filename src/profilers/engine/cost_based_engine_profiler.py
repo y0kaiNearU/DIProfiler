@@ -3,7 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from core.profiler import Profiler
-from models.models import EngineRecommendation, EngineType, PipelineRequest, ProfilingResult, ResourceRecommendation
+from models.models import (
+    EngineRecommendation,
+    EngineType,
+    PipelineRequest,
+    ProfilingResult,
+    ResourceRecommendation,
+)
 from profilers.resource.rule_based_resource_profiler import RuleBasedResourceProfiler
 
 _GB = 1024 ** 3

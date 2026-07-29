@@ -5,6 +5,8 @@ import narwhals as nw
 from engines.spark.database.common import SUPPORTED_DATABASES, qualified_table
 from models.models import DatabaseSource
 
+__all__ = ["SUPPORTED_DATABASES", "write"]
+
 
 def write(frame: nw.LazyFrame, dest: DatabaseSource) -> None:
     try:

@@ -12,8 +12,8 @@ from models.models import (
 from profilers.format.rule_based_format_profiler import (
     RuleBasedFormatProfiler,
     _append_write_mode_rule,
-    _no_operations_rule,
     _nested_schema_rule,
+    _no_operations_rule,
     _operation_rule,
     _size_bytes_rule,
     _wide_schema_rule,

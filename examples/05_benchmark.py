@@ -46,9 +46,9 @@ from models.models import (
     OperationType,
     PipelineRequest,
 )
-from profilers.engine.rule_based_engine_profiler import RuleBasedEngineProfiler
 from profilers.common.features import extract
 from profilers.engine.ml_engine_profiler import MLEngineProfiler
+from profilers.engine.rule_based_engine_profiler import RuleBasedEngineProfiler
 from profilers.prefetching.prefetching_profiler import PrefetchingProfiler
 
 logging.getLogger("pyspark").setLevel(logging.ERROR)

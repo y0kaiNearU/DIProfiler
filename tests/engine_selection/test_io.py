@@ -3,7 +3,14 @@ import pytest
 from engine_selection.io import FrameLoader, FrameWriter
 from engine_selection.loader import Loader
 from engine_selection.writer import Writer
-from models.models import DatabaseSource, DatasetInfo, EngineType, FileFormat, FileSource, PipelineRequest
+from models.models import (
+    DatabaseSource,
+    DatasetInfo,
+    EngineType,
+    FileFormat,
+    FileSource,
+    PipelineRequest,
+)
 
 
 class _StubLoader(Loader):

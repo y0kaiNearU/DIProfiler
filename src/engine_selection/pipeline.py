@@ -6,8 +6,11 @@ from typing import Any, Callable
 
 from core.profiler import Profiler
 from core.registry import ProfilerRegistry
-from engine_selection.capability_config import build_default_capabilities, build_required_capabilities
 from engine_selection.capabilities import CapabilityRegistry
+from engine_selection.capability_config import (
+    build_default_capabilities,
+    build_required_capabilities,
+)
 from engine_selection.loader import Loader
 from engine_selection.registry import LoaderRegistry, WriterRegistry
 from engine_selection.writer import Writer
@@ -25,7 +28,14 @@ from engines.polars.loader import PolarsLoader
 from engines.polars.writer import PolarsWriter
 from engines.spark.loader import SparkLoader
 from engines.spark.writer import SparkWriter
-from models.models import DatabaseSource, DatasetInfo, EngineType, FileSource, PipelineRequest, ProfilingResult
+from models.models import (
+    DatabaseSource,
+    DatasetInfo,
+    EngineType,
+    FileSource,
+    PipelineRequest,
+    ProfilingResult,
+)
 from profilers.common.composite import EnsembleProfiler
 from profilers.engine.rule_based_engine_profiler import RuleBasedEngineProfiler
 

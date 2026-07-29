@@ -12,7 +12,7 @@ class LoaderRegistry:
         self._loaders.extend(loaders)
 
     def unregister(self, engine: EngineType) -> None:
-        self._loaders = [l for l in self._loaders if l.engine != engine]
+        self._loaders = [loader for loader in self._loaders if loader.engine != engine]
 
     def resolve(self, engine: EngineType, request: PipelineRequest) -> Loader:
         for loader in self._loaders:
@@ -22,7 +22,7 @@ class LoaderRegistry:
 
     @property
     def engines(self) -> list[EngineType]:
-        return list({l.engine for l in self._loaders})
+        return list({loader.engine for loader in self._loaders})
 
 
 class WriterRegistry:

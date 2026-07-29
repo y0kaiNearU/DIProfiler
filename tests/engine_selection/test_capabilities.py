@@ -1,10 +1,12 @@
-import pytest
 
 from engine_selection.capabilities import CapabilityRegistry, SupportsDataSource, SupportsFormat
-from engine_selection.capability_config import build_default_capabilities, build_required_capabilities
+from engine_selection.capability_config import (
+    build_default_capabilities,
+    build_required_capabilities,
+)
 from models.models import (
-    DatasetInfo,
     DatabaseSource,
+    DatasetInfo,
     EngineType,
     FileFormat,
     FileSource,

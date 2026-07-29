@@ -1,4 +1,3 @@
-import pytest
 from unittest.mock import MagicMock
 
 from models.models import (
@@ -114,7 +113,6 @@ def test_profile_returns_delegate_result():
 
 
 def test_default_delegate_is_rule_based():
-    from profilers.engine.rule_based_engine_profiler import RuleBasedEngineProfiler
 
     profiler = PrefetchingProfiler(prefetch_fn=lambda r: _enriched_info(size_bytes=100 * 1024 ** 2))
     result = profiler.profile(_req())

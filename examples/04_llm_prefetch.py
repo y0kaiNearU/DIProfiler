@@ -19,7 +19,6 @@ from models.models import (
 from profilers.engine.llm_engine_profiler import LLMEngineProfiler
 from profilers.prefetching.prefetching_profiler import PrefetchingProfiler
 
-
 # ---------------------------------------------------------------------------
 # Step 1 - Create a synthetic CSV to simulate a real source file
 # ---------------------------------------------------------------------------
@@ -60,7 +59,7 @@ def file_prefetch(request: PipelineRequest) -> DatasetInfo:
 
     schema = {h: "unknown" for h in headers}
 
-    print(f"Prefetch complete:")
+    print("Prefetch complete:")
     print(f"  size_bytes  = {size_bytes:,}")
     print(f"  row_count   = {row_count:,}")
     print(f"  num_columns = {num_columns}")

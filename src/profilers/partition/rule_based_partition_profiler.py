@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from core.profiler import Profiler
 from models.models import PartitionRecommendation, PipelineRequest, ProfilingResult
-from profilers.common.voting import Rule as _Rule, Vote as _Vote, aggregate_votes
+from profilers.common.voting import Rule as _Rule
+from profilers.common.voting import Vote as _Vote
+from profilers.common.voting import aggregate_votes
 
 Vote = _Vote[str]
 Rule = _Rule[str]
