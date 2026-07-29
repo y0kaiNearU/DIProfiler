@@ -70,8 +70,10 @@ def test_weights_shift_balance_toward_llm():
     equal = build_ensemble_partition_profiler(llm_client=llm_client)
     llm_heavy = build_ensemble_partition_profiler(llm_client=llm_client, weights=[0.1, 0.9])
 
-    equal_region = next(r.confidence for r in equal.profile(_req(schema=schema)).recommendations if r.column == "region")
-    heavy_region = next(r.confidence for r in llm_heavy.profile(_req(schema=schema)).recommendations if r.column == "region")
+    equal_recs = equal.profile(_req(schema=schema)).recommendations
+    heavy_recs = llm_heavy.profile(_req(schema=schema)).recommendations
+    equal_region = next(r.confidence for r in equal_recs if r.column == "region")
+    heavy_region = next(r.confidence for r in heavy_recs if r.column == "region")
 
     assert heavy_region > equal_region
 

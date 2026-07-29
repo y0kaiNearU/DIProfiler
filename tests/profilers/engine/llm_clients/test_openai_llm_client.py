@@ -66,7 +66,8 @@ def test_recommend_scopes_tool_schema_to_engine_options():
     call_kwargs = client._client.chat.completions.create.call_args.kwargs
     assert call_kwargs["tool_choice"]["function"]["name"] == "recommend_engines"
     tool = next(t for t in call_kwargs["tools"] if t["function"]["name"] == "recommend_engines")
-    engine_enum = tool["function"]["parameters"]["properties"]["recommendations"]["items"]["properties"]["engine"]["enum"]
+    rec_props = tool["function"]["parameters"]["properties"]["recommendations"]["items"]["properties"]
+    engine_enum = rec_props["engine"]["enum"]
     assert engine_enum == ["duckdb", "polars"]
 
 

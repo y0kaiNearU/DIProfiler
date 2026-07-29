@@ -29,7 +29,9 @@ class _StubResourceProfiler(Profiler):
         return self._can_handle
 
     def profile(self, request):
-        rec = ResourceRecommendation(cores=self._cores, memory_bytes=self._memory_bytes, confidence=1.0, reasoning="stub")
+        rec = ResourceRecommendation(
+            cores=self._cores, memory_bytes=self._memory_bytes, confidence=1.0, reasoning="stub"
+        )
         return ProfilingResult(request=request, recommendations=[rec])
 
 

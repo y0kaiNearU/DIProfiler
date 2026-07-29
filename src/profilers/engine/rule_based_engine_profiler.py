@@ -35,7 +35,11 @@ def _size_bytes_rule(req: PipelineRequest) -> Vote | None:
     if size is None:
         return None
     if size >= _LARGE_DATASET_BYTES:
-        return EngineType.SPARK, 0.8, f"dataset size {size / _GB:.1f} GB exceeds {_LARGE_DATASET_BYTES // _GB} GB threshold"
+        return (
+            EngineType.SPARK,
+            0.8,
+            f"dataset size {size / _GB:.1f} GB exceeds {_LARGE_DATASET_BYTES // _GB} GB threshold",
+        )
     if size <= _MEDIUM_DATASET_BYTES:
         return EngineType.DUCKDB, 0.6, f"dataset size {size / _GB:.2f} GB fits comfortably in DuckDB"
     return None
@@ -55,7 +59,11 @@ def _polars_size_rule(req: PipelineRequest) -> Vote | None:
     if size is None:
         return None
     if size <= _POLARS_MAX_BYTES:
-        return EngineType.POLARS, 0.45, f"dataset size {size / _GB:.2f} GB fits comfortably in Polars' in-memory, multi-threaded engine"
+        return (
+            EngineType.POLARS,
+            0.45,
+            f"dataset size {size / _GB:.2f} GB fits comfortably in Polars' in-memory, multi-threaded engine",
+        )
     return None
 
 
@@ -111,7 +119,11 @@ def _operation_rule(req: PipelineRequest) -> Vote | None:
         return None
     heavy_ops = {OperationType.JOIN, OperationType.WINDOW}
     if heavy_ops & ops and req.source.size_bytes and req.source.size_bytes >= _MEDIUM_DATASET_BYTES:
-        return EngineType.SPARK, 0.4, f"heavy operations {[o.value for o in heavy_ops & ops]} on a large dataset favour Spark"
+        return (
+            EngineType.SPARK,
+            0.4,
+            f"heavy operations {[o.value for o in heavy_ops & ops]} on a large dataset favour Spark",
+        )
     return None
 
 

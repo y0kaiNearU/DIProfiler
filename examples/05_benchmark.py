@@ -312,7 +312,9 @@ if EngineType.DASK in _available_engine_types:
 
 _ENGINE_COLORS  = {"pandas": "#aaaaaa", "duckdb": "#f5a623", "polars": "#7b4fd6", "dask": "#38a169", "spark": "#e84040"}
 _ENGINE_MARKERS = {"pandas": "^",       "duckdb": "o",       "polars": "v",       "dask": "P",       "spark": "D"}
-_ENGINE_LABELS  = {"pandas": "pandas (baseline)", "duckdb": "DuckDB", "polars": "Polars", "dask": "Dask", "spark": "Spark (local[*])"}
+_ENGINE_LABELS  = {
+    "pandas": "pandas (baseline)", "duckdb": "DuckDB", "polars": "Polars", "dask": "Dask", "spark": "Spark (local[*])",
+}
 
 # Marker shape per profiler recommendation
 _PROFILER_STYLE = {

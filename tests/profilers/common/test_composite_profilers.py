@@ -115,7 +115,9 @@ class TestEnsembleProfiler:
             )
 
     def test_no_recommendations_returns_empty(self):
-        profiler = EnsembleProfiler([_StubProfiler("a", recommendations=[])], key_fn=_engine_key, build_fn=_engine_build)
+        profiler = EnsembleProfiler(
+            [_StubProfiler("a", recommendations=[])], key_fn=_engine_key, build_fn=_engine_build
+        )
         result = profiler.profile(_req())
         assert result.recommendations == []
 

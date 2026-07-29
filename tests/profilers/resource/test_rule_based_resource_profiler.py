@@ -28,7 +28,9 @@ class TestRuleBasedResourceProfiler:
         assert not self.profiler.can_handle(_req())
 
     def test_scales_cores_with_dataset_size(self):
-        small = self.profiler.profile(_req(size_bytes=500 * 1024 ** 2, available_cores=16, available_memory_bytes=64 * _GB))
+        small = self.profiler.profile(
+            _req(size_bytes=500 * 1024 ** 2, available_cores=16, available_memory_bytes=64 * _GB)
+        )
         large = self.profiler.profile(_req(size_bytes=8 * _GB, available_cores=16, available_memory_bytes=64 * _GB))
         assert small.best.cores < large.best.cores
 

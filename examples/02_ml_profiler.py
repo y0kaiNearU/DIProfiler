@@ -91,8 +91,14 @@ def compare(label: str, request: PipelineRequest) -> None:
 
     print(f"\n{label}")
     print("-" * len(label))
-    print(f"  rule-based -> {rule_best.engine.value:<12} (confidence {rule_best.confidence:.3f})" if rule_best else "  rule-based -> (no recommendation)")
-    print(f"  ml         -> {ml_best.engine.value:<12} (confidence {ml_best.confidence:.3f})" if ml_best else "  ml         -> (no recommendation)")
+    if rule_best:
+        print(f"  rule-based -> {rule_best.engine.value:<12} (confidence {rule_best.confidence:.3f})")
+    else:
+        print("  rule-based -> (no recommendation)")
+    if ml_best:
+        print(f"  ml         -> {ml_best.engine.value:<12} (confidence {ml_best.confidence:.3f})")
+    else:
+        print("  ml         -> (no recommendation)")
 
     if rule_best and ml_best and rule_best.engine != ml_best.engine:
         print("  ** DISAGREE **")
