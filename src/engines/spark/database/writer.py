@@ -2,10 +2,8 @@ from __future__ import annotations
 
 import narwhals as nw
 
-from engines.spark.database.common import SUPPORTED_DATABASES, qualified_table
+from engines.spark.database.common import qualified_table
 from models.models import DatabaseSource
-
-__all__ = ["SUPPORTED_DATABASES", "write"]
 
 
 def write(frame: nw.LazyFrame, dest: DatabaseSource) -> None:

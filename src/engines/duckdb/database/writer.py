@@ -7,8 +7,6 @@ import narwhals as nw
 from engines.duckdb.database.common import attach, qualified_table, setup_extension
 from models.models import DatabaseSource, EngineType, WriteMode
 
-SUPPORTED_DATABASES = ("postgresql", "mysql", "sqlite")
-
 
 def write(conn: Any, frame: nw.LazyFrame, dest: DatabaseSource) -> None:
     setup_extension(conn, dest.database_type)

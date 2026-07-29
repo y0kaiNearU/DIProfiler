@@ -4,11 +4,6 @@ import narwhals as nw
 
 from models.models import FileFormat, FileSource
 
-# JSON is excluded: modin 0.37's read_json raises internally regardless of
-# execution engine (PandasOnPython and PandasOnDask both fail), so only the
-# formats verified to actually round-trip are exposed here.
-SUPPORTED_FORMATS = (FileFormat.CSV, FileFormat.PARQUET)
-
 
 def load(src: FileSource) -> nw.LazyFrame:
     try:

@@ -6,8 +6,6 @@ import narwhals as nw
 
 from models.models import FileFormat, FileSource
 
-SUPPORTED_FORMATS = (FileFormat.CSV, FileFormat.PARQUET, FileFormat.JSON)
-
 
 def _json_read_path(path: str) -> str:
     """Dask writes ndjson as multiple part-files under a directory; glob them if so."""

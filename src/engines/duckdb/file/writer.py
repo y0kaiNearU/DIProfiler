@@ -7,8 +7,6 @@ import narwhals as nw
 
 from models.models import FileFormat, FileSource, WriteMode
 
-SUPPORTED_FORMATS = (FileFormat.CSV, FileFormat.PARQUET, FileFormat.JSON)
-
 _FORMAT_READERS = {
     FileFormat.PARQUET: "read_parquet",
     FileFormat.CSV: "read_csv",

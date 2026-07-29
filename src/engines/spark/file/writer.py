@@ -4,11 +4,6 @@ import narwhals as nw
 
 from models.models import FileFormat, FileSource
 
-SUPPORTED_FORMATS = (
-    FileFormat.CSV, FileFormat.PARQUET, FileFormat.JSON,
-    FileFormat.ORC, FileFormat.DELTA, FileFormat.ICEBERG,
-)
-
 
 def write(frame: nw.LazyFrame, dest: FileSource) -> None:
     writer = nw.to_native(frame).write.mode(dest.write_mode.value)

@@ -4,8 +4,6 @@ import narwhals as nw
 
 from models.models import FileFormat, FileSource
 
-SUPPORTED_FORMATS = (FileFormat.CSV, FileFormat.PARQUET, FileFormat.JSON)
-
 
 def load(src: FileSource) -> nw.LazyFrame:
     try:

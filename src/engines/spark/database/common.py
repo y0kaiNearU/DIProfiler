@@ -4,8 +4,6 @@ from typing import Any
 
 from models.models import DatabaseSource, EngineType
 
-SUPPORTED_DATABASES = ("postgresql", "mysql", "oracle")
-
 # MySQL has no schema layer; Oracle and PostgreSQL do
 _HAS_SCHEMA = {"postgresql", "oracle"}
 

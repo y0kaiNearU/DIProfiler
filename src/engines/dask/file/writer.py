@@ -8,8 +8,6 @@ import narwhals as nw
 from engines.dask.file.loader import _json_read_path
 from models.models import FileFormat, FileSource, WriteMode
 
-SUPPORTED_FORMATS = (FileFormat.CSV, FileFormat.PARQUET, FileFormat.JSON)
-
 
 def write(frame: nw.LazyFrame, dest: FileSource) -> None:
     try:

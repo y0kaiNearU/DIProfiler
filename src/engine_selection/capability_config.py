@@ -13,7 +13,7 @@ from engines.modin import CAPABILITIES as MODIN_CAPABILITIES
 from engines.pandas import CAPABILITIES as PANDAS_CAPABILITIES
 from engines.polars import CAPABILITIES as POLARS_CAPABILITIES
 from engines.spark import CAPABILITIES as SPARK_CAPABILITIES
-from models.models import DatabaseSource, EngineType, FileSource, PipelineRequest
+from models.models import DatasetInfo, EngineType, FileSource, PipelineRequest
 
 _ENGINE_CAPABILITIES = {
     EngineType.DUCKDB: DUCKDB_CAPABILITIES,
@@ -34,24 +34,31 @@ def build_default_capabilities() -> CapabilityRegistry:
     return registry
 
 
+def _required_capabilities(info: DatasetInfo, direction: str) -> list[Capability]:
+    """Capabilities needed to read/write info.source, per direction ("read" or "write")."""
+    source = info.source
+    if isinstance(source, FileSource):
+        return [
+            SupportsFormat(source.format, direction),
+            SupportsDataSource("filesystem", direction),
+        ]
+    return [SupportsDataSource(source.database_type, direction)]
+
+
+def required_read_capabilities(info: DatasetInfo) -> list[Capability]:
+    """Capabilities an engine needs to read this dataset as a source."""
+    return _required_capabilities(info, "read")
+
+
+def required_write_capabilities(info: DatasetInfo) -> list[Capability]:
+    """Capabilities an engine needs to write this dataset as a destination."""
+    return _required_capabilities(info, "write")
+
+
 def build_required_capabilities(request: PipelineRequest) -> list[Capability]:
     """Build list of capabilities required by request."""
-    caps: list[Capability] = []
-
-    # Source capabilities
-    if isinstance(request.source.source, FileSource):
-        caps.append(SupportsFormat(request.source.source.format, "read"))
-        caps.append(SupportsDataSource("filesystem", "read"))
-    elif isinstance(request.source.source, DatabaseSource):
-        caps.append(SupportsDataSource(request.source.source.database_type, "read"))
-
-    # Destination capabilities
+    caps = required_read_capabilities(request.source)
     if request.destination is not None:
-        if isinstance(request.destination.source, FileSource):
-            caps.append(SupportsFormat(request.destination.source.format, "write"))
-            caps.append(SupportsDataSource("filesystem", "write"))
-        elif isinstance(request.destination.source, DatabaseSource):
-            caps.append(SupportsDataSource(request.destination.source.database_type, "write"))
-
+        caps += required_write_capabilities(request.destination)
     return caps
 
