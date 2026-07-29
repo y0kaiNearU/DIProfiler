@@ -9,7 +9,7 @@ from profilers.common.voting import Tally
 EnsembleMode = Literal["weighted_sum", "max"]
 
 
-class EnsembleProfiler[R: Recommendation](Profiler[R]):
+class EnsembleProfiler[R: Recommendation, K: Hashable](Profiler[R]):
     """
     Combines multiple profilers into one recommendation set.
 
@@ -37,10 +37,10 @@ class EnsembleProfiler[R: Recommendation](Profiler[R]):
     def __init__(
         self,
         profilers: list[Profiler[R]],
-        key_fn: Callable[[R], Hashable],
+        key_fn: Callable[[R], K],
         weights: list[float] | None = None,
         mode: EnsembleMode = "weighted_sum",
-        build_fn: Callable[[Hashable, float, str], R] | None = None,
+        build_fn: Callable[[K, float, str], R] | None = None,
         filter_fn: Callable[[R], bool] | None = None,
     ) -> None:
         if weights is not None and len(weights) != len(profilers):
@@ -64,7 +64,7 @@ class EnsembleProfiler[R: Recommendation](Profiler[R]):
         return any(p.can_handle(request) for p in self._profilers)
 
     def profile(self, request: PipelineRequest) -> ProfilingResult[R]:
-        contributions: dict[Hashable, list[tuple[str, float, R]]] = {}
+        contributions: dict[K, list[tuple[str, float, R]]] = {}
         for profiler, weight in zip(self._profilers, self._weights):
             if not profiler.can_handle(request):
                 continue
@@ -81,7 +81,7 @@ class EnsembleProfiler[R: Recommendation](Profiler[R]):
         else:
             assert self._build_fn is not None, "mode='weighted_sum' requires build_fn (checked in __init__)"
             build_fn = self._build_fn
-            tallies: dict[Hashable, Tally] = {}
+            tallies: dict[K, Tally] = {}
             for candidate, items in contributions.items():
                 tally = tallies.setdefault(candidate, Tally())
                 for profiler_name, weight, rec in items:
