@@ -16,10 +16,7 @@ def _detect_memory_bytes() -> int | None:
     except ImportError:
         pass
 
-    # os.sysconf is POSIX-only; the sys.platform guard (rather than a bare
-    # try/except AttributeError) lets mypy type-check this branch on POSIX
-    # and skip it as unreachable on Windows, without needing a type: ignore
-    # that would be correct on one platform and stale on the other.
+
     if sys.platform != "win32":
         try:
             return os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
