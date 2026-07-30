@@ -1,7 +1,14 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "diprofiler"
 version = "0.1.0"
+description = "Profiles data pipeline requests and recommends the best query engine based on dataset characteristics."
+readme = "README.md"
 requires-python = ">=3.12"
+authors = [{ name = "y0kaiNearU", email = "abeku20@freeuni.edu.ge" }]
 dependencies = [
     "narwhals>=1.0",
     "packaging>=24.0",
@@ -33,8 +40,8 @@ all = [
     "openai>=1.0",
 ]
 
-[tool.uv]
-package = false
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
