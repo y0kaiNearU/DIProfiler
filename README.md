@@ -49,7 +49,7 @@ src/
   engines/     duckdb / polars / dask / spark / pandas / arrow / modin adapters
   models/      shared data models
   profilers/   rule-based, ML, prefetching, LLM profilers
-examples/      runnable scripts (01–05), own dependency group — see examples/README.md
+examples/      runnable scripts (01–09), own dependency group — see examples/README.md
 tests/         unit tests
 ```
 

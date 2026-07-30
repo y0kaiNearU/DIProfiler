@@ -23,6 +23,10 @@ uv run python examples/02_ml_profiler.py
 uv run python examples/03_diprofiler.py
 uv run python examples/04_llm_prefetch.py
 uv run python examples/05_benchmark.py
+uv run python examples/06_format_profiler.py
+uv run python examples/07_resource_profiler.py
+uv run python examples/08_partition_profiler.py
+uv run python examples/09_cost_based_engine_profiler.py
 ```
 
 ## What's in the `examples` group
@@ -56,6 +60,19 @@ Spark, which is deliberately left out (see below).
     graceful skip: if `anthropic` is importable (it is, via the `examples`
     group) but `ANTHROPIC_API_KEY` isn't set, the script raises instead of
     skipping. Set the key first, or comment out that section.
+- **`06_format_profiler.py`** — `RuleBasedFormatProfiler` recommending an
+  output *file format* (not engine) from size, operations, schema, and
+  write-mode heuristics; no extra setup.
+- **`07_resource_profiler.py`** — `RuleBasedResourceProfiler` sizing a
+  cores/memory budget against a fixed 16-core/64 GB environment; no extra
+  setup.
+- **`08_partition_profiler.py`** — `RuleBasedPartitionProfiler` picking a
+  partition column from schema heuristics, then blended with a stub "LLM"
+  client via `build_ensemble_partition_profiler` (no API key needed — the
+  stub stands in for `AnthropicLLMClient`/`OpenAILLMClient`, same idea as
+  `04_llm_prefetch.py` but without a live call).
+- **`09_cost_based_engine_profiler.py`** — `CostBasedEngineProfiler` picking
+  the cheapest engine at illustrative $/hr rates; no extra setup.
 
 ## Everything at once
 
